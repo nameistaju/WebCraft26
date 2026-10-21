@@ -18,47 +18,68 @@ export default function WorkPage({ onOpenContact }) {
         />
       </div>
 
-      {/* 1. Hero Section */}
-      <section className="relative w-full px-4 sm:px-8 max-w-7xl mx-auto pb-16 md:pb-24 z-10">
-        {/* Title Block with Floating Pills */}
+      {/* 1. Hero Section (Matching Two26 section-work-hero) */}
+      <section className="section-work-hero relative w-full px-4 sm:px-8 max-w-7xl mx-auto pb-16 md:pb-24 z-10">
         <div className="relative max-w-5xl">
           {/* Pill 1: Just a few */}
-          <div className="absolute -top-3 sm:-top-5 right-[12%] sm:right-[22%] md:right-[28%] transform rotate-6 z-20 pointer-events-none">
-            <span className="bg-black text-white px-3.5 py-1 rounded-full text-xs sm:text-sm font-medium tracking-wide shadow-sm inline-block">
+          <div className="absolute -top-3 sm:-top-5 right-[8%] sm:right-[18%] md:right-[24%] transform rotate-6 z-20 pointer-events-none">
+            <span className="bg-black text-white px-4 py-1 rounded-full text-xs sm:text-sm font-medium tracking-wide shadow-md inline-block">
               Just a few
             </span>
           </div>
 
-          {/* Pill 2: Proud of you! */}
-          <div className="absolute top-[48%] sm:top-[52%] left-0 sm:left-2 transform -rotate-6 z-20 pointer-events-none">
-            <span className="bg-black text-white px-3.5 py-1 rounded-full text-xs sm:text-sm font-medium tracking-wide shadow-sm inline-block">
-              Proud of you!
+          {/* Heading Line 1: Left Aligned */}
+          <h1 className="font-display text-[13.5vw] sm:text-[11vw] md:text-[92px] lg:text-[118px] font-bold text-[#0576fc] uppercase leading-[0.85] tracking-tight select-none text-left">
+            A FEW PROJECTS
+          </h1>
+
+          {/* Pill 2: Kind of proud */}
+          <div className="absolute top-[48%] sm:top-[52%] left-0 sm:left-4 transform -rotate-6 z-20 pointer-events-none">
+            <span className="bg-black text-white px-4 py-1 rounded-full text-xs sm:text-sm font-medium tracking-wide shadow-md inline-block">
+              Kind of proud
             </span>
           </div>
 
-          {/* Headline */}
-          <h1 className="font-display text-[13.5vw] sm:text-[11vw] md:text-[92px] lg:text-[118px] font-bold text-[#0576fc] uppercase leading-[0.88] tracking-tight select-none">
-            A FEW PROJECTS
-            <br />
+          {/* Heading Line 2: Right Aligned */}
+          <h1 className="font-display text-[13.5vw] sm:text-[11vw] md:text-[92px] lg:text-[118px] font-bold text-[#0576fc] uppercase leading-[0.85] tracking-tight select-none text-right">
             TO BRAG ABOUT
           </h1>
+
+          {/* Decorative Two26 Work Hero Loop Path */}
+          <div className="hidden lg:block absolute right-[-4%] top-[-8%] w-44 xl:w-52 pointer-events-none select-none z-0 opacity-80">
+            <svg
+              width="230"
+              height="575"
+              viewBox="0 0 230 575"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-full h-auto"
+            >
+              <path
+                d="M171.769 562.464C171.769 562.464 -1.40879 424.611 16.2688 279.464C25.7685 201.464 68.7349 148.19 136.269 152.464C206.346 156.9 248.62 311.964 179.269 311.964C138.269 311.964 85.2685 223.964 101.269 138.964C114.373 69.3474 171.769 10.4645 171.769 10.4645"
+                stroke="#0576fc"
+                strokeWidth="28"
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
         </div>
 
-        {/* Sub-hero: Box Illustration + Editorial Statement */}
-        <div className="mt-8 md:mt-12 flex flex-col md:flex-row items-center md:items-end justify-between gap-8 md:gap-12">
-          {/* Left: Box Illustration */}
+        {/* Work Hero Bottom: Two26 Sleeping Cat Illustration + Editorial Description */}
+        <div className="mt-10 md:mt-16 flex flex-col md:flex-row items-center md:items-end justify-between gap-8 md:gap-12">
+          {/* Left: Two26 Official Cat Work Illustration */}
           <div className="w-full max-w-[280px] sm:max-w-[340px] md:max-w-[420px] flex-shrink-0">
             <img
-              src="/assets/work-box.svg"
-              alt="WebCraft projects box illustration"
-              className="w-full h-auto select-none pointer-events-none"
+              src="/assets/cat-work.svg"
+              alt="WebCraft creative cat at work"
+              className="w-full h-auto select-none pointer-events-none drop-shadow-sm"
             />
           </div>
 
           {/* Right: Editorial Description */}
           <div className="max-w-md md:pb-4 text-center md:text-left">
             <p className="font-sans text-base sm:text-lg md:text-[1.15rem] leading-relaxed text-[#0576fc] font-medium">
-              A selection of brands, identities, websites and other things we've helped bring to life.
+              A selection of brands, identities, websites and other things we’ve helped bring to life.
               Different challenges, various approaches, same focus on getting everything right.
             </p>
           </div>
@@ -249,7 +270,7 @@ export default function WorkPage({ onOpenContact }) {
                   >
                     <path
                       d="M703.002 794.357C703.002 794.357 586.502 1041.53 501.002 983.857C415.502 926.187 803.502 649.566 665.002 551.357C526.502 453.148 337.002 1084.36 151.002 983.857C-74.3269 862.107 889.446 190.221 646.002 40.3572C466.502 -70.1428 173.257 679.857 62.5019 617.857C-86.2292 534.598 351.002 132.857 236.002 40.3572C151.002 -28.0122 25.002 153.857 25.002 153.857"
-                      stroke="#0576fc"
+                      stroke={project.brandColor || project.colorDot || '#0576fc'}
                       strokeWidth="14"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -315,7 +336,45 @@ export default function WorkPage({ onOpenContact }) {
         </section>
       )}
 
-      {/* 4. Footer */}
+      {/* 4. Two26 Signature Projects End Callout */}
+      <section className="relative w-full px-4 sm:px-8 max-w-7xl mx-auto py-24 md:py-36 text-center z-10">
+        <div className="relative max-w-4xl mx-auto flex flex-col items-center">
+          {/* Milestone Pills */}
+          <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
+            <span className="px-4 py-1.5 rounded-full bg-white text-black border border-black/10 text-xs sm:text-sm font-medium tracking-wide shadow-xs -rotate-2">
+              Packaging
+            </span>
+            <span className="px-4 py-1.5 rounded-full bg-black text-white text-xs sm:text-sm font-medium tracking-wide shadow-xs rotate-3">
+              Identity
+            </span>
+            <span className="px-4 py-1.5 rounded-full bg-white text-black border border-black/10 text-xs sm:text-sm font-medium tracking-wide shadow-xs -rotate-3">
+              Digital
+            </span>
+            <span className="px-4 py-1.5 rounded-full bg-[#0576fc] text-white text-xs sm:text-sm font-medium tracking-wide shadow-xs rotate-2">
+              Strategy
+            </span>
+          </div>
+
+          <h2 className="font-display text-[9vw] sm:text-[7vw] md:text-[60px] lg:text-[76px] font-bold text-black uppercase leading-[0.92] tracking-tight mb-10 max-w-3xl">
+            READY TO BUILD SOMETHING SUSPICIOUSLY GOOD?
+          </h2>
+
+          {/* Let's Talk CTA Button */}
+          <button
+            onClick={onOpenContact}
+            className="group inline-flex items-center gap-3 px-8 py-4 rounded-full bg-[#0576fc] text-white font-sans font-semibold text-base sm:text-lg shadow-xl hover:bg-black transition-all duration-300 hover:scale-105 cursor-pointer"
+          >
+            <span>Let's Talk</span>
+            <div className="w-7 h-7 rounded-full bg-white text-black flex items-center justify-center group-hover:rotate-45 transition-transform duration-300">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                <path d="M1.5 8.5L8.5 1.5M3.5 1.5L8.5 1.5L8.5 6.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+          </button>
+        </div>
+      </section>
+
+      {/* 5. Footer */}
       <Footer onOpenContact={onOpenContact} />
     </div>
   );
