@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>WEBCRAFT · Intro</title>
+<style>
+@property --r{syntax:'<length>';inherits:false;initial-value:0px}
+:root{
+  --bg:#f5f9ff; --card:#fff; --text:#0b1b33; --mute:#5b6b85; --ink:#0576fc; --hair:#0576fc; --line:rgba(5,118,252,.14);
+  --ws:1.6; --sx:802px;                      /* W intro scale / distance to centre */
+  --ease:cubic-bezier(.65,0,.25,1);
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#060b16; --card:#0d1626; --text:#eaf2ff; --mute:#8fa3c4; --ink:#2f8dff; --hair:#8fc2ff; --line:rgba(143,194,255,.16)}
+}
+@media (max-width:600px){:root{--ws:2.5}}
+*{box-sizing:border-box;margin:0}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--text);font:16px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+
+/* ───────── website (revealed) ───────── */
+.site{min-height:100svh;display:flex;flex-direction:column;padding:max(16px,env(safe-area-inset-top)) 5vw max(16px,env(safe-area-inset-bottom));
+  background:radial-gradient(70vmax 45vmax at 80% 0%,rgba(5,118,252,.14),transparent 70%),var(--bg)}
+nav{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:1100px;width:100%;margin:0 auto;padding:6px 0}
+nav svg{width:clamp(110px,22vw,150px);height:auto;fill:none;stroke:var(--ink);stroke-width:42;stroke-linecap:round;stroke-linejoin:round}
+nav a.btn{padding:9px 16px;font-size:14px}
+main{flex:1;display:grid;align-content:center;max-width:1100px;width:100%;margin:0 auto;padding:clamp(28px,8vh,72px) 0}
+.eyebrow{font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--ink);font-weight:600}
+h1{font-size:clamp(32px,7.2vw,76px);line-height:1.04;letter-spacing:-.03em;margin:14px 0 16px;max-width:15ch}
+h1 em{font-style:normal;color:var(--ink)}
+.sub{color:var(--mute);max-width:46ch;font-size:clamp(15px,2.2vw,18px)}
+.cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+.btn{display:inline-block;padding:13px 22px;border-radius:999px;background:var(--ink);color:#fff;text-decoration:none;font-weight:600;font-size:15px;border:1.5px solid var(--ink)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:clamp(28px,6vh,52px)}
+.chips span{padding:8px 14px;border:1px solid var(--line);background:var(--card);border-radius:999px;font-size:13px;color:var(--mute)}
+footer{max-width:1100px;width:100%;margin:0 auto;display:flex;justify-content:space-between;font-size:12px;color:var(--mute)}
+footer button{all:unset;cursor:pointer;color:var(--ink);font-weight:600}
+
+/* ───────── loader ───────── */
+.loader{position:fixed;inset:0;z-index:10;background:var(--bg);display:grid;place-items:center;padding:0 5vw;cursor:pointer;
+  -webkit-mask:radial-gradient(circle at 50% 50%,transparent var(--r),#000 calc(var(--r) + 40px));
+          mask:radial-gradient(circle at 50% 50%,transparent var(--r),#000 calc(var(--r) + 40px))}
+.stage{width:min(100%,980px)}
+.stage svg{display:block;width:100%;height:auto;overflow:visible}
+.s{fill:none;stroke:var(--ink);stroke-linecap:round;stroke-linejoin:round;stroke-width:3;stroke-dasharray:1 2;stroke-dashoffset:1.02;opacity:0}
+.wg{transform-box:fill-box;transform-origin:center;transform:translateX(var(--sx)) scale(var(--ws))}
+
+.run .w{animation:draw 1.1s var(--ease) .3s both, weight .7s var(--ease) 1.4s forwards}
+.run .wg{animation:wmove .95s var(--ease) 2.25s forwards, wback .8s var(--ease) 7.25s forwards, wopen 1.1s cubic-bezier(.6,0,.2,1) 8.15s forwards}
+.run .l{animation:
+  draw .9s var(--ease) calc(2.9s + var(--i)*.14s) both,
+  weight .7s var(--ease) 4.7s forwards,
+  thin .5s var(--ease) 6.4s forwards,
+  undraw .6s var(--ease) calc(6.7s + (6 - var(--i))*.07s) forwards}
+.run .loader{animation:open 1.25s cubic-bezier(.6,0,.2,1) 8.15s forwards, gone .01s linear 9.45s forwards}
+.run .fu{animation:fu .9s cubic-bezier(.2,.7,.2,1) calc(8.55s + var(--k,0)*.1s) both}
+
+@keyframes draw{0%{stroke-dashoffset:1.02;opacity:0}2%{opacity:1}100%{stroke-dashoffset:0;opacity:1}}
+@keyframes weight{from{stroke-width:3}to{stroke-width:42}}
+@keyframes thin{from{stroke-width:42}to{stroke-width:3}}
+@keyframes undraw{from{stroke-dashoffset:0}to{stroke-dashoffset:-1.02}}
+@keyframes wmove{from{transform:translateX(var(--sx)) scale(var(--ws))}to{transform:none}}
+@keyframes wback{from{transform:none}to{transform:translateX(var(--sx)) scale(var(--ws))}}
+@keyframes wopen{from{transform:translateX(var(--sx)) scale(var(--ws));opacity:1}to{transform:translateX(var(--sx)) scale(calc(var(--ws)*5));opacity:0}}
+@keyframes open{from{--r:0px}to{--r:160vmax}}
+@keyframes gone{to{visibility:hidden;pointer-events:none}}
+@keyframes fu{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+.skip .loader{display:none}
+.skip .fu{animation:none!important}
+@media (prefers-reduced-motion:reduce){.loader{display:none}.run .fu{animation:none}}
+</style>
+</head>
+<body class="run">
+
+<div class="site">
+  <nav class="fu" style="--k:0">
+    <svg viewBox="90 240 2020 270" role="img" aria-label="WEBCRAFT"><path d="M119 269 V392 C119 450 160 485 207 485 C240 485 272 470 298 452 C330 415 366 385 366 335 C366 295 335 269 298 269 C261 269 230 295 230 335 C230 385 266 415 298 452 C324 470 356 485 389 485 C436 485 477 450 477 392 V269"/><path d="M705 269 H580 C558 269 545 283 545 306 V444 C545 467 558 481 580 481 H705 M545 375 H690"/><path d="M770 269 V481 M770 269 H858 C897 269 917 285 917 313 C917 341 897 372 858 372 H770 M858 372 C902 372 920 395 920 426 C920 458 900 481 858 481 H770"/><path d="M1176 307 A105 105 0 1 0 1176 441"/><path d="M1247 481 V269 H1342 C1376 269 1397 288 1397 322 C1397 356 1378 392 1342 392 H1312 M1312 392 L1394 481"/><path d="M1456 479 L1533 298 C1543 276 1552 269 1561 269 C1570 269 1579 276 1589 298 L1668 479"/><path d="M1727 479 V300 C1727 280 1740 269 1760 269 H1858 M1727 372 H1850"/><path d="M1921 269 H2077 M1998 269 V479"/></svg>
+    <a class="btn" href="#contact">Let’s talk</a>
+  </nav>
+  <main>
+    <p class="eyebrow fu" style="--k:1">Digital Solutions</p>
+    <h1 class="fu" style="--k:2">Websites &amp; brands that <em>actually grow</em> your business.</h1>
+    <p class="sub fu" style="--k:3">Web design, software, branding and AI automation, crafted line by line for ambitious businesses.</p>
+    <div class="cta fu" style="--k:4"><a class="btn" href="#contact">Start a project</a><a class="btn ghost" href="#work">See our work</a></div>
+    <div class="chips fu" style="--k:5"><span>Websites</span><span>Software</span><span>Branding</span><span>AI Automation</span></div>
+  </main>
+  <footer class="fu" style="--k:6"><span>© Web Craft Digital Solutions</span><button id="replay" type="button">↻ Replay intro</button></footer>
+</div>
+
+<div class="loader" id="loader" aria-hidden="true" title="Tap to skip">
+  <div class="stage">
+    <svg viewBox="0 0 2060 320"><g transform="translate(-70 -215)">
+      <g class="wg"><path class="s w" pathLength="1" d="M119 269 V392 C119 450 160 485 207 485 C240 485 272 470 298 452 C330 415 366 385 366 335 C366 295 335 269 298 269 C261 269 230 295 230 335 C230 385 266 415 298 452 C324 470 356 485 389 485 C436 485 477 450 477 392 V269"/></g>
+      <path class="s l" style="--i:0" pathLength="1" d="M705 269 H580 C558 269 545 283 545 306 V444 C545 467 558 481 580 481 H705 M545 375 H690"/><path class="s l" style="--i:1" pathLength="1" d="M770 269 V481 M770 269 H858 C897 269 917 285 917 313 C917 341 897 372 858 372 H770 M858 372 C902 372 920 395 920 426 C920 458 900 481 858 481 H770"/><path class="s l" style="--i:2" pathLength="1" d="M1176 307 A105 105 0 1 0 1176 441"/><path class="s l" style="--i:3" pathLength="1" d="M1247 481 V269 H1342 C1376 269 1397 288 1397 322 C1397 356 1378 392 1342 392 H1312 M1312 392 L1394 481"/><path class="s l" style="--i:4" pathLength="1" d="M1456 479 L1533 298 C1543 276 1552 269 1561 269 C1570 269 1579 276 1589 298 L1668 479"/><path class="s l" style="--i:5" pathLength="1" d="M1727 479 V300 C1727 280 1740 269 1760 269 H1858 M1727 372 H1850"/><path class="s l" style="--i:6" pathLength="1" d="M1921 269 H2077 M1998 269 V479"/>
+    </g></svg>
+  </div>
+</div>
+
+<script>
+(function(){
+  var b=document.body;
+  document.getElementById('loader').addEventListener('click',function(){b.classList.add('skip')});
+  document.getElementById('replay').addEventListener('click',function(){
+    b.classList.remove('run','skip'); void b.offsetWidth; b.classList.add('run');
+  });
+})();
+</script>
+</body>
+</html>
