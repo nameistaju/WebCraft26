@@ -34,8 +34,8 @@ export const assetMap = {
 
   // Hero Section
   hero: {
-    video: "/assets/2.mp4", // New hero character video 2.mp4
-    illustration: "/assets/2.mp4",
+    video: "/assets/1.mp4", // Hero character video 1.mp4
+    illustration: "/assets/1.mp4",
     poster: "/assets/People_and_cats_walking_20261021123936.gif",
     loopLeft: "/assets/download (15).svg", // Left edge orange curved loop entering hero (viewBox="0 0 229 599")
     loopRight: "/assets/download (13).svg", // Right edge orange curved loop entering hero (viewBox="0 0 354 487")
