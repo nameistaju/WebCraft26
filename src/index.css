@@ -154,7 +154,16 @@ body {
 .hero-section {
   position: relative;
   width: 100%;
-  background-color: var(--brand-secondary, #F8EEE8);
+  background: linear-gradient(
+    180deg,
+    var(--brand-secondary, #F8EEE8) 0%,
+    var(--brand-secondary, #F8EEE8) 18%,
+    #F7ECE5 25%,
+    #F6EBE3 32%,
+    #F6EBE3 84%,
+    #F7ECE5 92%,
+    var(--brand-secondary, #F8EEE8) 100%
+  );
   padding-top: var(--hero-padding-top, 135px);
   padding-bottom: 0;
   overflow: clip;
@@ -284,7 +293,6 @@ body {
   display: flex;
   justify-content: center;
   overflow: visible;
-  mix-blend-mode: multiply;
 }
 
 .hero-video {
@@ -294,8 +302,13 @@ body {
   object-fit: contain;
   pointer-events: none;
   user-select: none;
-  mix-blend-mode: multiply;
   background-color: transparent;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 45px, black calc(100% - 45px), transparent 100%),
+                      linear-gradient(to bottom, transparent 0%, black 45px, black calc(100% - 35px), transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to right, transparent 0%, black 45px, black calc(100% - 45px), transparent 100%),
+              linear-gradient(to bottom, transparent 0%, black 45px, black calc(100% - 35px), transparent 100%);
+  mask-composite: intersect;
 }
 
 /* Keyframes for marquee */
@@ -569,13 +582,25 @@ body {
 }
 
 /* ==========================================================================
-   EXPERIENCE STORY LAYER (OVERLAY ONLY)
+   EXPERIENCE STORY LAYER (OVERLAY & CONTROLS)
    ========================================================================== */
+/* Remove the big original "Scroll Down" and "Scroll Back" SVG paths & chevrons */
+#info,
+#info2 {
+  display: none !important;
+}
+
+/* Nav hours text night contrast */
+body.nav-night-contrast header div.text-black,
+body.nav-night-contrast .nav-hours-text {
+  color: #ffffff !important;
+}
+
 .story-overlay-container {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 30;
+  z-index: 45;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -617,59 +642,127 @@ body {
   text-shadow: 0 2px 14px rgba(0, 0, 0, 0.6);
 }
 
-.story-stats-grid {
+/* Small Scroll Hint at Top (progress ~0) */
+.story-scroll-hint {
+  position: fixed;
+  bottom: 2.25rem;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin-top: 1.5rem;
-  width: 100%;
-  max-width: 32rem;
+  align-items: center;
+  gap: 0.25rem;
+  z-index: 40;
+  transition: opacity 0.2s ease-out;
 }
 
-@media (min-width: 640px) {
-  .story-stats-grid {
-    flex-direction: row;
-    justify-content: center;
-    gap: 1.25rem;
+@keyframes scrollHintBob {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(6px);
   }
 }
 
-.story-stat-card {
-  background: rgba(14, 10, 26, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 1rem;
-  padding: 1rem 1.25rem;
-  flex: 1;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+.story-scroll-hint-icon {
+  animation: scrollHintBob 1.6s ease-in-out infinite;
 }
 
-.story-stat-value {
-  font-family: var(--font-primary, 'Mdnichrometest', sans-serif);
-  font-size: clamp(1.5rem, 2.5vw, 2.25rem);
-  font-weight: 700;
-  color: #ffffff;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.1;
-  text-shadow: 0 0 15px rgba(5, 118, 252, 0.6);
+/* Scene 5: Growth Lottie Animation (No box wrapper) */
+.story-growth-card {
+  width: clamp(180px, 22vw, 320px);
+  aspect-ratio: 1 / 1;
+  margin: 1.5rem auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.4));
 }
 
-.story-stat-label {
-  font-family: var(--font-secondary, 'Neuemontreal', sans-serif);
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.75);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-top: 0.35rem;
+@media (max-width: 767px) {
+  .story-growth-card {
+    width: 60vw;
+  }
 }
 
-.story-constellation-wrap {
-  width: min(90vw, 480px);
-  height: 220px;
+/* Scene 8: Final Scene Layout (Centered Flex Column, gap 1rem) */
+.story-final-scene {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: 90%;
+  max-width: 32rem;
+}
+
+/* Digital Marketing Lottie with Soft Blue Radial Glow */
+.story-dm-lottie-wrap {
+  width: min(clamp(150px, 16vw, 240px), 22vh);
+  aspect-ratio: 1 / 1;
   position: relative;
-  margin: 1.25rem auto 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.story-dm-lottie-wrap::before {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(5, 118, 252, 0.25) 0%, rgba(5, 118, 252, 0) 70%);
   pointer-events: none;
+  z-index: 0;
+}
+
+/* Channel Chips Row */
+.story-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 28rem;
+}
+
+.story-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  font-family: var(--font-secondary, 'Neuemontreal', sans-serif);
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+  user-select: none;
+  will-change: transform, opacity;
+}
+
+@keyframes chipSoftPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(5, 118, 252, 0);
+  }
+  50% {
+    box-shadow: 0 0 16px 2px rgba(5, 118, 252, 0.75);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(5, 118, 252, 0);
+  }
+}
+
+.story-chip-pulse {
+  animation: chipSoftPulse 0.8s ease-out forwards;
 }
 
 .story-cta-btn {
@@ -723,24 +816,37 @@ body {
     transform: none !important;
   }
   .story-floating-icon,
-  .story-shooting-star {
+  .story-shooting-star,
+  .story-scroll-hint-icon {
     display: none !important;
+    animation: none !important;
+  }
+  .story-chip-pulse {
+    animation: none !important;
   }
 }
 
 /* ==========================================================================
    CARD SVG SCRIBBLE LOOP ON HOVER (MATCHING TWO26)
-   - Starts small from bottom and scribbles up, expanding to fill the entire card
+   - Starts small from bottom and scribbles up leisurely, expanding to fill the card
    - As scribble completes filling the card, the secondary image appears
    ========================================================================== */
+:root {
+  --card-scribble-duration: 1.55s;
+  --card-scribble-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --card-reveal-delay: 0.85s;
+  --card-reveal-duration: 0.8s;
+  --card-leave-duration: 1.0s;
+}
+
 .card-scribble-path {
   stroke-dasharray: 4500;
   stroke-dashoffset: 4500;
   stroke-width: 14px;
   opacity: 0;
-  transition: stroke-dashoffset 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0s,
-              stroke-width 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0s,
-              opacity 0.25s ease 0s;
+  transition: stroke-dashoffset var(--card-leave-duration, 1.0s) var(--card-scribble-ease) 0s,
+              stroke-width var(--card-leave-duration, 1.0s) var(--card-scribble-ease) 0s,
+              opacity 0.4s ease 0s;
   will-change: stroke-dashoffset, stroke-width, opacity;
 }
 
@@ -748,9 +854,9 @@ body {
   stroke-dashoffset: 0;
   stroke-width: 900px;
   opacity: 1;
-  transition: stroke-dashoffset 0.95s cubic-bezier(0.22, 1, 0.36, 1),
-              stroke-width 0.95s cubic-bezier(0.22, 1, 0.36, 1),
-              opacity 0.25s ease;
+  transition: stroke-dashoffset var(--card-scribble-duration, 1.55s) var(--card-scribble-ease),
+              stroke-width var(--card-scribble-duration, 1.55s) var(--card-scribble-ease),
+              opacity 0.3s ease;
 }
 
 /* Secondary image / lifestyle photo reveal right as scribble fills card */
@@ -764,30 +870,30 @@ body {
   transform: scale(0.96);
   z-index: 22; /* sits above the blue scribble SVG (z-20) */
   pointer-events: none;
-  transition: opacity 0.5s ease 0s, transform 0.55s ease 0s;
+  transition: opacity 0.6s ease 0s, transform 0.65s ease 0s;
   will-change: opacity, transform;
 }
 
 .group:hover .card-hover-reveal-img {
   opacity: 1;
   transform: scale(1);
-  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.5s,
-              transform 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.5s;
+  transition: opacity var(--card-reveal-duration, 0.8s) cubic-bezier(0.16, 1, 0.3, 1) var(--card-reveal-delay, 0.85s),
+              transform var(--card-reveal-duration, 0.8s) cubic-bezier(0.16, 1, 0.3, 1) var(--card-reveal-delay, 0.85s);
 }
 
 /* Hover reveal title and CTA text */
 .card-hover-reveal-view {
   opacity: 0;
   transform: scale(0.94);
-  transition: opacity 0.45s ease 0s, transform 0.5s ease 0s;
+  transition: opacity 0.55s ease 0s, transform 0.6s ease 0s;
   will-change: opacity, transform;
 }
 
 .group:hover .card-hover-reveal-view {
   opacity: 1;
   transform: scale(1);
-  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.5s,
-              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.5s;
+  transition: opacity var(--card-reveal-duration, 0.8s) cubic-bezier(0.16, 1, 0.3, 1) var(--card-reveal-delay, 0.85s),
+              transform var(--card-reveal-duration, 0.8s) cubic-bezier(0.16, 1, 0.3, 1) var(--card-reveal-delay, 0.85s);
 }
 
 

@@ -23,6 +23,7 @@ export default function App() {
   const [contactOpen, setContactOpen] = useState(() => {
     return window.location.hash === '#contact';
   });
+  const [experienceProgress, setExperienceProgress] = useState(0);
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -73,6 +74,7 @@ export default function App() {
         onOpenContact={() => setContactOpen(true)}
         currentView={currentView}
         onNavigate={handleNavigate}
+        experienceProgress={experienceProgress}
       />
 
       {/* Main View: Home, Work Page, About Page, or Experience Page */}
@@ -80,6 +82,7 @@ export default function App() {
         <ExperiencePage
           onBack={() => handleNavigate('home')}
           onOpenContact={() => setContactOpen(true)}
+          onProgressChange={setExperienceProgress}
         />
       ) : currentView === 'about' ? (
         <AboutPage onOpenContact={() => setContactOpen(true)} />

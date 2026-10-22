@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { assetMap } from '../assets/assetMap';
 import WebcraftLogo from './WebcraftLogo';
 
-export default function Navbar({ onOpenContact, currentView, onNavigate }) {
+export default function Navbar({ onOpenContact, currentView, onNavigate, experienceProgress = 0 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const isNightNav = currentView === 'experience' && experienceProgress > 0.55;
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -52,16 +54,18 @@ export default function Navbar({ onOpenContact, currentView, onNavigate }) {
               About us
             </button>
 
-            <button
-              onClick={() => onNavigate('experience')}
-              className={`px-5 py-2 rounded-full font-sans text-sm font-medium transition-all duration-200 cursor-pointer ${
-                currentView === 'experience'
-                  ? 'bg-black text-white shadow-sm'
-                  : 'bg-white text-black hover:bg-black hover:text-white shadow-sm border border-black/5'
-              }`}
-            >
-              Experience
-            </button>
+            {currentView !== 'experience' && (
+              <button
+                onClick={() => onNavigate('experience')}
+                className={`px-5 py-2 rounded-full font-sans text-sm font-medium transition-all duration-200 cursor-pointer ${
+                  currentView === 'experience'
+                    ? 'bg-black text-white shadow-sm'
+                    : 'bg-white text-black hover:bg-black hover:text-white shadow-sm border border-black/5'
+                }`}
+              >
+                Experience
+              </button>
+            )}
           </div>
 
           {/* Center Brand Logo */}
@@ -80,7 +84,9 @@ export default function Navbar({ onOpenContact, currentView, onNavigate }) {
           {/* Right Controls */}
           <div className="flex items-center gap-2.5 sm:gap-4">
             {/* Small Detail: Monday-Friday schedule */}
-            <div className="hidden sm:flex flex-col text-right text-[11px] font-sans font-medium leading-tight text-black">
+            <div className={`hidden sm:flex flex-col text-right text-[11px] font-sans font-medium leading-tight transition-colors duration-150 ${
+              isNightNav ? 'text-white' : 'text-black'
+            }`}>
               <span>Monday–Friday</span>
               <span>10:00 – 17:00</span>
             </div>

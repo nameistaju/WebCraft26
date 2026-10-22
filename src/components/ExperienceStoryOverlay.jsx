@@ -1,15 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import lottie from 'lottie-web';
 
 // ============================================================================
 // CONFIGURATION & SEEDED DATA
 // ============================================================================
 export const DEBUG = false;
-
-export const STATS = [
-  { label: 'reach', value: 250, prefix: '+', suffix: '%', decimals: 0 },
-  { label: 'leads / month', value: 120, prefix: '+', suffix: '', decimals: 0 },
-  { label: 'ROI', value: 3.4, prefix: '', suffix: 'x', decimals: 1 },
-];
 
 export const SEEDED_ICONS = [
   { id: 1, type: 'heart', x: 18, startY: 72, endY: 22, rot: -12, color: '#0576fc', size: 24, mobile: true },
@@ -24,12 +19,12 @@ export const SEEDED_ICONS = [
   { id: 10, type: 'comment', x: 68, startY: 74, endY: 20, rot: 12, color: '#ffffff', size: 24, mobile: false },
 ];
 
-export const CONSTELLATION_NODES = [
-  { id: 'insta', label: 'Instagram', cx: 80, cy: 120 },
-  { id: 'gads', label: 'Google Ads', cx: 180, cy: 50 },
-  { id: 'seo', label: 'SEO', cx: 290, cy: 80 },
-  { id: 'wapp', label: 'WhatsApp', cx: 220, cy: 170 },
-  { id: 'email', label: 'Email', cx: 370, cy: 140 },
+export const CHIPS = [
+  { id: 'social', label: 'Social', icon: 'social' },
+  { id: 'search', label: 'Search', icon: 'search' },
+  { id: 'ads', label: 'Ads', icon: 'ads' },
+  { id: 'email', label: 'Email', icon: 'email' },
+  { id: 'whatsapp', label: 'WhatsApp', icon: 'whatsapp' },
 ];
 
 export const WINDOWS = [
@@ -37,13 +32,59 @@ export const WINDOWS = [
   { id: 2, range: [0.10, 0.24], name: 'Mountains' },
   { id: 3, range: [0.24, 0.38], name: 'Clouds / Forest' },
   { id: 4, range: [0.38, 0.50], name: 'Eagle' },
-  { id: 5, range: [0.50, 0.66], name: 'Growth Counters' },
+  { id: 5, range: [0.50, 0.66], name: 'Growth Animation' },
   { id: 6, range: [0.66, 0.78], name: 'Engagement Icons' },
   { id: 7, range: [0.78, 0.88], name: 'Shooting Star' },
-  { id: 8, range: [0.88, 1.00], name: 'Constellation & CTA' },
+  { id: 8, range: [0.88, 1.00], name: 'Final Scene & CTA' },
 ];
 
-// Helper: Inline SVG Icon Renderer
+const clamp = (val, min, max) => Math.min(max, Math.max(min, val));
+
+// Generic Channel Chip Icons (No brand logos)
+function ChipIcon({ type }) {
+  switch (type) {
+    case 'social':
+      return (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+          <polyline points="16 6 12 2 8 6"/>
+          <line x1="12" y1="2" x2="12" y2="15"/>
+        </svg>
+      );
+    case 'search':
+      return (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      );
+    case 'ads':
+      return (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/>
+          <circle cx="12" cy="12" r="6"/>
+          <circle cx="12" cy="12" r="2"/>
+        </svg>
+      );
+    case 'email':
+      return (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+      );
+    case 'whatsapp':
+      return (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
+// Scene 6 Floating Icons
 function IconRenderer({ type, size = 24, color = 'currentColor' }) {
   switch (type) {
     case 'heart':
@@ -96,6 +137,16 @@ function IconRenderer({ type, size = 24, color = 'currentColor' }) {
 export default function ExperienceStoryOverlay({ progress = 0, onOpenContact }) {
   const [reducedMotion, setReducedMotion] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [hasPulsed, setHasPulsed] = useState(false);
+
+  // Lottie Refs
+  const growthContainerRef = useRef(null);
+  const growthAnimRef = useRef(null);
+  const growthLoadedRef = useRef(false);
+
+  const dmContainerRef = useRef(null);
+  const dmAnimRef = useRef(null);
+  const dmLoadedRef = useRef(false);
 
   useEffect(() => {
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -112,6 +163,117 @@ export default function ExperienceStoryOverlay({ progress = 0, onOpenContact }) 
       window.removeEventListener('resize', checkMobile);
     };
   }, []);
+
+  // Initialize Growth Lottie (Scene 5)
+  useEffect(() => {
+    if (!growthContainerRef.current) return;
+    try {
+      const anim = lottie.loadAnimation({
+        container: growthContainerRef.current,
+        renderer: 'svg',
+        loop: false,
+        autoplay: false,
+        path: '/lottie/growth.json',
+      });
+      growthAnimRef.current = anim;
+      anim.addEventListener('DOMLoaded', () => {
+        growthLoadedRef.current = true;
+        if (reducedMotion) {
+          anim.goToAndStop(anim.totalFrames - 1, true);
+        } else {
+          const scrubT = clamp((progress - 0.50) / (0.62 - 0.50), 0, 1);
+          anim.goToAndStop(scrubT * (anim.totalFrames - 1), true);
+        }
+      });
+      anim.addEventListener('data_failed', () => {});
+      anim.addEventListener('error', () => {});
+    } catch {
+      // fail silently, layout won't shift
+    }
+
+    return () => {
+      try {
+        if (growthAnimRef.current) {
+          growthAnimRef.current.destroy();
+          growthAnimRef.current = null;
+          growthLoadedRef.current = false;
+        }
+      } catch {}
+    };
+  }, []);
+
+  // Initialize Digital Marketing Lottie (Scene 8)
+  useEffect(() => {
+    if (!dmContainerRef.current) return;
+    try {
+      const anim = lottie.loadAnimation({
+        container: dmContainerRef.current,
+        renderer: 'svg',
+        loop: true,
+        autoplay: false,
+        path: '/lottie/digital-marketing.json',
+      });
+      dmAnimRef.current = anim;
+      anim.addEventListener('DOMLoaded', () => {
+        dmLoadedRef.current = true;
+        if (reducedMotion) {
+          anim.goToAndStop(0, true);
+        } else if (progress >= 0.88 && progress <= 1.00) {
+          anim.play();
+        }
+      });
+      anim.addEventListener('data_failed', () => {});
+      anim.addEventListener('error', () => {});
+    } catch {
+      // fail silently, layout won't shift
+    }
+
+    return () => {
+      try {
+        if (dmAnimRef.current) {
+          dmAnimRef.current.destroy();
+          dmAnimRef.current = null;
+          dmLoadedRef.current = false;
+        }
+      } catch {}
+    };
+  }, []);
+
+  // Scrub Growth Lottie with scroll
+  useEffect(() => {
+    if (!growthAnimRef.current || !growthLoadedRef.current) return;
+    if (reducedMotion) {
+      growthAnimRef.current.goToAndStop(growthAnimRef.current.totalFrames - 1, true);
+      return;
+    }
+    const scrubT = clamp((progress - 0.50) / (0.62 - 0.50), 0, 1);
+    const frame = scrubT * (growthAnimRef.current.totalFrames - 1);
+    growthAnimRef.current.goToAndStop(frame, true);
+  }, [progress, reducedMotion]);
+
+  // Manage Digital Marketing playback
+  useEffect(() => {
+    if (!dmAnimRef.current || !dmLoadedRef.current) return;
+    if (reducedMotion) {
+      dmAnimRef.current.goToAndStop(0, true);
+      return;
+    }
+    const isSceneActive = progress >= 0.88 && progress <= 1.00;
+    if (isSceneActive) {
+      dmAnimRef.current.play();
+    } else {
+      dmAnimRef.current.pause();
+    }
+  }, [progress, reducedMotion]);
+
+  // Trigger one-time soft pulse on chips after all chips appear (progress >= 0.97)
+  useEffect(() => {
+    if (progress >= 0.97 && !hasPulsed) {
+      setHasPulsed(true);
+    } else if (progress < 0.88 && hasPulsed) {
+      setHasPulsed(false);
+    }
+  }, [progress, hasPulsed]);
 
   // Compute Active Scene Index
   const activeSceneIndex = WINDOWS.findIndex(
@@ -152,28 +314,6 @@ export default function ExperienceStoryOverlay({ progress = 0, onOpenContact }) 
     };
   };
 
-  // Compute Scrubbed Stat Counter Value
-  const getStatValue = (stat) => {
-    if (reducedMotion || progress >= 0.66) {
-      return new Intl.NumberFormat('en-US', {
-        minimumFractionDigits: stat.decimals,
-        maximumFractionDigits: stat.decimals,
-      }).format(stat.value);
-    }
-    if (progress <= 0.50) {
-      return new Intl.NumberFormat('en-US', {
-        minimumFractionDigits: stat.decimals,
-        maximumFractionDigits: stat.decimals,
-      }).format(0);
-    }
-    const ratio = Math.min(1, Math.max(0, (progress - 0.50) / 0.16));
-    const current = stat.value * ratio;
-    return new Intl.NumberFormat('en-US', {
-      minimumFractionDigits: stat.decimals,
-      maximumFractionDigits: stat.decimals,
-    }).format(current);
-  };
-
   // Compute Floating Icon Styles (Scene 6)
   const getIconStyle = (icon) => {
     if (reducedMotion || progress < 0.66 || progress > 0.78) return { display: 'none' };
@@ -192,11 +332,33 @@ export default function ExperienceStoryOverlay({ progress = 0, onOpenContact }) 
     };
   };
 
-  // Constellation SVG Line Drawing Math (Scene 8)
-  const PATH_LENGTH = 504;
-  const drawRatio = Math.min(1, Math.max(0, (progress - 0.88) / 0.08));
-  const strokeDashoffset = reducedMotion ? 0 : PATH_LENGTH * (1 - drawRatio);
-  const nodesPulsing = progress >= 0.96;
+  // Compute Chip Staggered Style (Scene 8: [0.90 - 0.97])
+  const getChipStyle = (index) => {
+    if (reducedMotion) {
+      return { opacity: 1, transform: 'none' };
+    }
+    const step = 0.07 / CHIPS.length; // ~0.014 per chip
+    const chipStart = 0.90 + index * step;
+    const chipEnd = chipStart + step;
+
+    let opacity = 0;
+    let y = 12;
+
+    if (progress >= chipEnd) {
+      opacity = 1;
+      y = 0;
+    } else if (progress > chipStart) {
+      const t = (progress - chipStart) / step;
+      opacity = t;
+      y = 12 * (1 - t);
+    }
+
+    return {
+      opacity,
+      transform: `translate3d(0, ${y.toFixed(1)}px, 0)`,
+      transition: 'opacity 0.1s ease-out, transform 0.1s ease-out',
+    };
+  };
 
   const handleContactClick = () => {
     if (typeof onOpenContact === 'function') {
@@ -229,18 +391,43 @@ export default function ExperienceStoryOverlay({ progress = 0, onOpenContact }) 
         </div>
       )}
 
-      {/* Main Overlay Layer */}
+      {/* Main Overlay Layer (Z-index 45 sits above illustration birds/bats) */}
       <div className="story-overlay-container" aria-live="polite">
         {/* ==================================================================
-            1. [0.00 - 0.10] SUNRISE (Under "Scroll Down")
+            1. [0.00 - 0.10] SUNRISE (Standard Centered Headline)
             ================================================================== */}
         <div
           style={getCardStyle(0.00, 0.10)}
-          className={`story-message-card bottom-16 sm:bottom-20 ${activeSceneIndex === 0 ? 'active' : ''}`}
+          className={`story-message-card ${activeSceneIndex === 0 ? 'active' : ''}`}
         >
-          <p className="story-subtext text-white/90 font-medium">
+          <h2 className="story-headline">
             Every brand starts in the dark.
-          </p>
+          </h2>
+        </div>
+
+        {/* Small Scroll Hint (Bobs at progress 0, fades out above 0.03) */}
+        <div
+          className="story-scroll-hint"
+          style={{
+            opacity: progress <= 0.03 ? (1 - progress / 0.03) * 0.6 : 0,
+            pointerEvents: 'none',
+          }}
+          aria-hidden="true"
+        >
+          <span className="text-[12px] uppercase tracking-[0.2em] font-sans font-medium text-white/80">Scroll</span>
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="story-scroll-hint-icon text-white/80"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
         </div>
 
         {/* ==================================================================
@@ -276,7 +463,7 @@ export default function ExperienceStoryOverlay({ progress = 0, onOpenContact }) 
         </div>
 
         {/* ==================================================================
-            5. [0.50 - 0.66] SUN GROWING (GROWTH COUNTERS)
+            5. [0.50 - 0.66] SUN GROWING (GROWTH LOTTIE ANIMATION)
             ================================================================== */}
         <div
           style={getCardStyle(0.50, 0.66)}
@@ -284,23 +471,10 @@ export default function ExperienceStoryOverlay({ progress = 0, onOpenContact }) 
         >
           <h2 className="story-headline">Scaling what works.</h2>
 
-          {/* 3 Stats in a Row (Stack on Mobile) */}
-          <div className="story-stats-grid">
-            {STATS.map((stat, idx) => (
-              <div key={idx} className="story-stat-card">
-                <div className="story-stat-value">
-                  {stat.prefix}
-                  {getStatValue(stat)}
-                  {stat.suffix}
-                </div>
-                <div className="story-stat-label">{stat.label}</div>
-              </div>
-            ))}
+          {/* Dark Glass Card with Scrubbed Growth Animation */}
+          <div className="story-growth-card">
+            <div ref={growthContainerRef} className="w-full h-full flex items-center justify-center" />
           </div>
-
-          <p className="text-[11px] text-white/60 font-sans mt-3 tracking-wide">
-            Sample numbers. Replace with real client results.
-          </p>
         </div>
 
         {/* ==================================================================
@@ -347,126 +521,73 @@ export default function ExperienceStoryOverlay({ progress = 0, onOpenContact }) 
         )}
 
         {/* ==================================================================
-            8. [0.88 - 1.00] NIGHT, STARS (CONSTELLATION + FINAL CTA)
+            8. [0.88 - 1.00] NIGHT, STARS (MEGAPHONE LOTTIE + CHANNEL CHIPS + CTA)
+            One centered flex column with gap 1rem
             ================================================================== */}
         <div
           style={getCardStyle(0.88, 1.00)}
-          className={`story-message-card max-w-xl ${activeSceneIndex === 7 ? 'active' : ''}`}
+          className={`story-message-card story-final-scene ${activeSceneIndex === 7 ? 'active' : ''}`}
         >
-          {/* Animated 5-Node Constellation */}
-          <div className="story-constellation-wrap" aria-hidden="true">
-            <svg
-              viewBox="0 0 450 220"
-              className="w-full h-full overflow-visible"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              {/* Connecting Sequentially Drawn Path */}
-              <path
-                d="M 80 120 L 180 50 L 290 80 L 220 170 L 370 140"
-                stroke="#0576fc"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeDasharray={PATH_LENGTH}
-                strokeDashoffset={strokeDashoffset}
-                style={{
-                  filter: 'drop-shadow(0 0 8px rgba(5, 118, 252, 0.8))',
-                  transition: reducedMotion ? 'none' : 'stroke-dashoffset 0.1s linear',
-                }}
-              />
-
-              {/* Secondary delicate web lines */}
-              <path
-                d="M 180 50 L 220 170 M 80 120 L 220 170"
-                stroke="rgba(255, 255, 255, 0.25)"
-                strokeWidth="1"
-                strokeDasharray="4 4"
-                style={{ opacity: drawRatio > 0.8 ? 1 : 0, transition: 'opacity 0.3s ease' }}
-              />
-
-              {/* 5 Star Nodes */}
-              {CONSTELLATION_NODES.map((node, i) => {
-                const nodeVisible = reducedMotion || drawRatio >= (i / CONSTELLATION_NODES.length);
-                return (
-                  <g
-                    key={node.id}
-                    transform={`translate(${node.cx}, ${node.cy})`}
-                    style={{
-                      opacity: nodeVisible ? 1 : 0,
-                      transform: nodesPulsing ? 'scale(1.1)' : 'scale(1)',
-                      transformOrigin: `${node.cx}px ${node.cy}px`,
-                      transition: 'transform 0.4s ease, opacity 0.3s ease',
-                    }}
-                  >
-                    {/* Glowing outer halo */}
-                    <circle cx="0" cy="0" r="10" fill="#0576fc" opacity="0.4" />
-                    {/* Core bright star point */}
-                    <circle cx="0" cy="0" r="4.5" fill="#ffffff" />
-
-                    {/* Node Text Label */}
-                    <text
-                      x="0"
-                      y={node.cy > 100 ? 22 : -14}
-                      textAnchor="middle"
-                      fill="#ffffff"
-                      fontSize="11.5"
-                      fontFamily="var(--font-secondary, 'Neuemontreal', sans-serif)"
-                      fontWeight="600"
-                      letterSpacing="0.04em"
-                      style={{
-                        textShadow: '0 2px 8px rgba(0,0,0,0.8), 0 0 10px rgba(5,118,252,0.6)',
-                      }}
-                    >
-                      {node.label}
-                    </text>
-                  </g>
-                );
-              })}
-            </svg>
+          {/* 1) Digital Marketing Lottie with soft blue radial glow */}
+          <div className="story-dm-lottie-wrap">
+            <div ref={dmContainerRef} className="w-full h-full relative z-10" />
           </div>
 
-          {/* Heading */}
-          <h2 className="story-headline text-2xl sm:text-3xl md:text-4xl">
+          {/* 2) Headline */}
+          <h2 className="story-headline text-2xl sm:text-3xl md:text-4xl text-center">
             Ready to start your climb?
           </h2>
 
-          {/* Call-to-Action Group */}
-          <div className="mt-5 flex flex-col items-center">
-            {/* Primary Interactive CTA (44px min tap target & focusable) */}
-            <button
-              onClick={handleContactClick}
-              className="story-cta-btn group"
-              aria-label="Let's talk - Get in touch with WebCraft"
+          {/* 3) Primary Button: Let's talk */}
+          <button
+            onClick={handleContactClick}
+            className="story-cta-btn group"
+            aria-label="Let's talk - Get in touch with WebCraft"
+          >
+            <span>Let's talk</span>
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 10 10"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
+              aria-hidden="true"
             >
-              <span>Let's talk</span>
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 10 10"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
-                aria-hidden="true"
-              >
-                <path
-                  d="M1.5 8.5L8.5 1.5M3.5 1.5L8.5 1.5L8.5 6.5"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
+              <path
+                d="M1.5 8.5L8.5 1.5M3.5 1.5L8.5 1.5L8.5 6.5"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
 
-            {/* Secondary Link: Scroll back up */}
-            <button
-              onClick={handleScrollToTop}
-              className="text-xs sm:text-sm text-white/70 hover:text-white underline underline-offset-4 cursor-pointer mt-3.5 transition-colors pointer-events-auto focus:outline-none focus:ring-2 focus:ring-white/40 rounded py-1 px-2"
-            >
-              Scroll back up
-            </button>
+          {/* 4) Row of 5 Channel Chips (Social, Search, Ads, Email, WhatsApp) */}
+          <div className="story-chips-row">
+            {CHIPS.map((chip, idx) => (
+              <div
+                key={chip.id}
+                style={{
+                  ...getChipStyle(idx),
+                  animationDelay: `${idx * 120}ms`,
+                }}
+                className={`story-chip ${hasPulsed && !reducedMotion ? 'story-chip-pulse' : ''}`}
+              >
+                <ChipIcon type={chip.icon} />
+                <span>{chip.label}</span>
+              </div>
+            ))}
           </div>
+
+          {/* 5) Small Secondary Link: Scroll back up */}
+          <button
+            onClick={handleScrollToTop}
+            className="text-xs sm:text-sm text-white/70 hover:text-white underline underline-offset-4 cursor-pointer transition-colors pointer-events-auto focus:outline-none focus:ring-2 focus:ring-white/40 rounded py-1 px-2"
+          >
+            Scroll back up
+          </button>
         </div>
       </div>
     </>
