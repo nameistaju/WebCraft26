@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>404 – Page Not Found</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&family=PT+Serif:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root{ --navy:#2d3b48; --yellow:#eada4f; --light:#f4f4f2; }
+  html,body{margin:0;height:100%;overflow:hidden;background:var(--light);
+    font-family:"PT Sans",-apple-system,"Helvetica Neue",Arial,sans-serif;color:var(--navy);}
+  #stage{position:fixed;inset:0;}
+  canvas{display:block;cursor:pointer;touch-action:none;}
+  .hud{position:fixed;top:26px;left:0;right:0;pointer-events:none;
+    display:flex;justify-content:center;gap:54px;user-select:none;text-align:center;}
+  .hud .label{font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.45;}
+  .hud .value{font-family:"PT Serif",serif;font-weight:700;font-size:34px;line-height:1;margin-top:4px;
+    font-variant-numeric:tabular-nums;}
+  .home{position:fixed;top:24px;left:26px;z-index:5;
+    font-weight:700;font-size:13px;letter-spacing:.04em;text-decoration:none;
+    color:var(--navy);opacity:.6;display:inline-flex;align-items:center;gap:7px;
+    padding:9px 16px;border-radius:999px;box-shadow:inset 0 0 0 1.5px rgba(45,59,72,.35);
+    transition:opacity .15s ease,background .15s ease;}
+  .home:hover{opacity:1;background:rgba(45,59,72,.06);}
+  .home.hidden{display:none;}
+  .hint{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);
+    font-weight:700;font-size:13px;letter-spacing:.06em;opacity:.5;
+    pointer-events:none;user-select:none;text-align:center;white-space:nowrap;
+    transition:opacity .3s ease;}
+  .hint.hidden{opacity:0;}
+  .modal{position:fixed;inset:0;background:rgba(244,244,242,.85);
+    backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:10;}
+  .modal.show{display:flex;}
+  .box{text-align:center;color:var(--navy);padding:24px;max-width:440px;animation:pop .4s cubic-bezier(.2,.9,.25,1.1) both;}
+  @keyframes pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+  .h1{font-family:"PT Serif",serif;font-weight:700;font-size:120px;line-height:.9;letter-spacing:-.02em;position:relative;display:inline-block;}
+  .h1::after{content:"";display:block;width:.22em;height:.22em;border-radius:50%;background:var(--yellow);position:absolute;top:.18em;right:-.34em;}
+  .sub{font-size:18px;margin-top:14px;opacity:.65;letter-spacing:.01em;}
+  .score{font-family:"PT Serif",serif;font-size:24px;font-weight:700;margin:22px 0 28px;}
+  .btn-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+  .btn{font-family:inherit;font-weight:700;font-size:15px;letter-spacing:.03em;
+    padding:14px 28px;border-radius:999px;border:none;cursor:pointer;
+    transition:transform .12s ease,background .15s ease,color .15s ease;text-decoration:none;display:inline-block;}
+  .btn-primary{background:var(--yellow);color:var(--navy);}
+  .btn-primary:hover{transform:translateY(-2px);background:#dfce44;}
+  .btn-ghost{background:transparent;color:var(--navy);box-shadow:inset 0 0 0 2px var(--navy);}
+  .btn-ghost:hover{transform:translateY(-2px);background:rgba(45,59,72,.06);}
+</style>
+</head>
+<body>
+<div id="stage"><canvas id="c"></canvas></div>
+
+<a href="/" class="home" id="homeBtn">← Back to Home</a>
+
+<div class="hud">
+  <div>
+    <div class="label">Score</div>
+    <div class="value" id="cur">0</div>
+  </div>
+  <div>
+    <div class="label">Best</div>
+    <div class="value" id="best">0</div>
+  </div>
+</div>
+
+<div class="hint" id="hint">Click, Tap or Spacebar to fly · Navigate through the gaps</div>
+
+<div class="modal" id="modal">
+  <div class="box">
+    <div class="h1">404</div>
+    <div class="sub">Looks like this page flew away.</div>
+    <div class="score" id="finalScore">0 gaps cleared</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="retry">Fly Again</button>
+      <a href="/" class="btn btn-ghost">Back to Home</a>
+    </div>
+  </div>
+</div>
+
+<script>
+(()=>{
+'use strict';
+const c = document.getElementById('c'), ctx = c.getContext('2d');
+const curEl = document.getElementById('cur'), bestEl = document.getElementById('best');
+const modal = document.getElementById('modal'), finalEl = document.getElementById('finalScore');
+const hint = document.getElementById('hint'), retry = document.getElementById('retry');
+const homeBtn = document.getElementById('homeBtn');
+
+const NAVY = '#2d3b48', YEL = '#eada4f', LIGHT = '#f4f4f2';
+
+const PLANE_SVG = `<svg width="91" height="85" viewBox="0 0 91 85" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M90.8994 6.26844C90.9088 4.43429 90.2327 2.66278 89.0036 1.30135C87.8668 0.644745 86.6086 0.225556 85.3052 0.0691427C84.0017 -0.0872703 82.6801 0.0223438 81.4202 0.391355C76.7937 1.41189 72.2246 2.67756 67.7323 4.18302C65.4194 4.86552 63.1444 5.66177 60.9073 6.53385C57.5707 7.7851 54.3098 9.22594 51.0111 10.6668C44.941 13.3176 39.0175 16.292 33.2661 19.5772C27.4954 22.8255 22.0596 26.6356 17.0377 30.9522L4.03232 42.5926L1.03691 45.588C0.667375 45.9757 0.348829 46.4089 0.0889896 46.8772C-0.0296632 47.2081 -0.0296632 47.57 0.0889896 47.9009C0.166681 48.3172 0.345694 48.7079 0.610213 49.0385C0.874732 49.3692 1.21661 49.6296 1.60566 49.7968C3.0706 50.2968 4.60771 50.553 6.15566 50.5551C7.82399 50.5551 10.7815 50.5551 13.3219 50.9343C14.6067 50.8957 15.8888 51.0752 17.1136 51.4651L17.834 59.9205C18.0615 62.3472 18.1752 64.243 18.1752 66.0251C18.1752 68.8689 17.7961 73.798 17.7961 77.6655C17.7961 78.0074 17.9319 78.3353 18.1737 78.5771C18.4154 78.8189 18.7433 78.9547 19.0852 78.9547C19.4271 78.9547 19.7551 78.8189 19.9968 78.5771C20.2386 78.3353 20.3744 78.0074 20.3744 77.6655C20.3744 73.8739 20.8673 68.8689 20.9052 66.0251C20.9052 64.1672 20.9052 62.2334 20.6398 59.693C20.3744 57.1526 20.3744 53.9676 20.0711 52.1097C19.7677 50.2518 19.7298 49.228 14.9902 48.318C12.1844 47.9768 8.31691 47.7872 6.23149 47.6734L4.14607 47.3701L6.34524 45.2089L19.4265 33.8339C24.2686 29.6297 29.5285 25.9325 35.124 22.8001C40.7802 19.7492 46.589 16.9903 52.5277 14.5343C55.7507 13.1693 59.0115 11.8422 62.2723 10.7426C69.2101 8.17355 76.3682 6.24441 83.6573 4.97927C87.0698 6.45802 86.5769 7.74719 86.5011 8.77094C86.3596 10.6849 86.0165 12.5786 85.4773 14.4205L80.5861 30.9522C79.6003 34.2509 78.5386 37.3222 77.439 40.3176C74.7469 47.5597 71.7894 54.3468 69.0594 62.1955C68.4198 63.9767 67.6597 65.7122 66.7844 67.3901C65.3815 70.0443 63.789 72.5847 62.3102 74.9734C61.8932 75.7461 61.4112 76.4818 60.8694 77.1726L60.4902 77.6276L60.2627 77.2864L56.4711 71.3334C54.6014 68.7684 52.6018 66.3006 50.4802 63.9397C48.3525 61.5585 46.0862 59.3049 43.6932 57.1905C42.0627 55.8255 37.4748 52.0339 36.1098 54.7639C35.7307 55.2568 35.3136 56.2047 35.0861 56.4701L30.6498 62.9159L26.1757 70.8405C24.5832 73.6084 22.6873 76.2247 20.9811 78.9926C20.2607 80.2059 19.5402 81.4572 18.9336 82.7843C18.8032 83.0558 18.7859 83.368 18.8854 83.6524C18.9849 83.9367 19.1931 84.17 19.4644 84.3009C19.4644 84.3009 20.5261 85.173 22.0807 83.9976C23.6352 82.8222 24.0902 82.5189 24.9623 81.8364C25.8344 81.1539 27.844 79.7509 29.2469 78.7651C30.6498 77.7793 31.7873 77.0589 33.0386 76.1868L38.8019 72.1676C41.8352 70.0064 44.7548 67.7693 47.5986 65.3805L48.2432 66.1009C50.2907 68.4897 52.2244 70.9922 53.8927 73.343L57.3052 79.1822C57.6526 79.8285 58.0454 80.4494 58.4807 81.0401C58.6976 81.2698 58.964 81.4472 59.2596 81.5588C59.5552 81.6705 59.8723 81.7135 60.1869 81.6847C61.0853 81.5369 61.9253 81.1432 62.6136 80.5472C63.6913 79.5023 64.6225 78.316 65.3815 77.0209C66.9361 74.6322 68.6423 72.0159 70.1211 69.4376C71.1396 67.6257 72.0143 65.7367 72.7373 63.788C75.5432 55.9772 78.6523 49.2659 81.3823 42.0997C82.5957 38.9905 83.6953 35.8434 84.719 32.4689L89.6482 15.7855C90.5677 12.6997 90.9901 9.4871 90.8994 6.26844ZM34.4794 69.8926C33.1703 70.7382 31.9048 71.6493 30.6877 72.6226C29.3986 73.6464 28.1852 74.708 26.8961 75.8455L24.0523 78.7651C25.5311 76.528 27.0857 74.3668 28.4507 72.0918L33.1523 64.5084L37.5127 58.2522C37.7023 58.0247 38.2711 57.0768 38.4986 56.6976C38.7261 56.3184 39.2569 57.1905 39.674 57.4939C40.0911 57.7972 41.3802 59.0484 41.8732 59.4655C43.1623 60.6409 44.4515 61.968 45.6648 63.2572C42.0627 65.6459 38.1573 67.5797 34.4794 69.8926Z" fill="#2D3B48"/><path d="M51.8452 33.4926C49.8356 35.6917 48.0535 38.0047 46.0818 40.3934C44.1102 42.7822 41.8352 45.8534 39.9014 48.7351C39.4843 49.3417 39.1052 49.9863 38.726 50.593C37.7402 53.5884 39.1431 53.1334 41.7593 50.8963L42.1006 50.3655C44.2239 47.6734 46.6127 45.133 48.8498 42.7822C52.4518 38.6492 56.4331 34.8576 60.2248 31.1038L68.6423 23.1792C72.7752 19.3876 76.9081 15.3684 80.9652 11.3872C87.1077 0.618819 70.3864 15.7855 61.3623 24.0134C58.0635 27.1605 54.8785 30.1559 51.8452 33.4926Z" fill="#2D3B48"/><path d="M50.3286 21.8902C45.0582 25.4543 39.9774 29.246 34.8965 33.2652L22.9149 43.0098C22.1565 43.6923 21.2845 44.4127 20.4124 45.1331C18.5924 47.4081 18.8578 48.2423 22.9907 46.4223C23.5974 46.0052 24.204 45.5881 24.697 45.171L37.2095 36.2227L68.3769 14.7239C71.4482 12.6385 74.4057 10.5531 77.4769 8.5435C78.1974 6.00308 72.8132 7.78517 68.3769 10.4014L66.3674 11.6148C60.9832 14.9893 55.5611 18.2881 50.3286 21.8902Z" fill="#2D3B48"/></svg>`;
+
+const planeImg = new Image();
+planeImg.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(PLANE_SVG)));
+
+const PSVG_W = 91, PSVG_H = 85;
+const P_CX = 58, P_CY = 40;
+const BASE_ANG = 0.62;
+
+let W, H, dpr = 1;
+let SPACE = 380;
+let TW = 120;
+let PX = 160;
+let PR = 14;
+let GRAV = 0.46;
+let FLAP = -8;
+let LW = 2.8;
+let GH = 60;
+let groundY = 0;
+let GAP = 210;
+
+let state = 'ready'; // ready | play | over
+let plane = { x: 160, y: 300, vy: 0 };
+let trees = [];
+let props = [];
+let score = 0, best = 0;
+try{ best = +(localStorage.getItem('tr404best')||0); }catch(e){}
+bestEl.textContent = best;
+
+let scrollX = 0;
+
+function metrics(){
+  GH = Math.max(48, Math.min(H * 0.07, 90));
+  groundY = H - GH;
+  GAP = Math.max(184, Math.min(H * 0.28, 256));
+  SPACE = Math.max(300, Math.min(W * 0.4, 520));
+  TW = Math.max(96, Math.min(W * 0.09, 168));
+  PX = Math.max(120, W * 0.2);
+  PR = Math.max(12, Math.min(W * 0.012, 16));
+  LW = Math.max(2.6, TW * 0.024);
+  plane.x = PX;
+}
+
+function rnd(s){
+  let x = Math.sin(s * 127.1 + 0.7) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+function handStroke(pts, seed, amp, close){
+  const jp = pts.map((p, i) => [
+    p[0] + (rnd(seed + i * 1.7) - 0.5) * amp,
+    p[1] + (rnd(seed + i * 3.1 + 11) - 0.5) * amp
+  ]);
+  ctx.beginPath();
+  ctx.moveTo(jp[0][0], jp[0][1]);
+  for(let i = 1; i < jp.length - 1; i++){
+    const mx = (jp[i][0] + jp[i+1][0]) / 2;
+    const my = (jp[i][1] + jp[i+1][1]) / 2;
+    ctx.quadraticCurveTo(jp[i][0], jp[i][1], mx, my);
+  }
+  const last = jp[jp.length - 1];
+  ctx.lineTo(last[0], last[1]);
+  if(close) ctx.closePath();
+  ctx.stroke();
+}
+
+function handFill(pts, seed, amp){
+  const jp = pts.map((p, i) => [
+    p[0] + (rnd(seed + i * 1.7) - 0.5) * amp,
+    p[1] + (rnd(seed + i * 3.1 + 11) - 0.5) * amp
+  ]);
+  ctx.beginPath();
+  ctx.moveTo(jp[0][0], jp[0][1]);
+  for(let i = 1; i < jp.length - 1; i++){
+    const mx = (jp[i][0] + jp[i+1][0]) / 2;
+    const my = (jp[i][1] + jp[i+1][1]) / 2;
+    ctx.quadraticCurveTo(jp[i][0], jp[i][1], mx, my);
+  }
+  ctx.lineTo(jp[jp.length - 1][0], jp[jp.length - 1][1]);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawCrownBlob(cx, cy, rx, ry, seed, color){
+  const N = 12;
+  const pts = [];
+  for(let i = 0; i < N; i++){
+    const a = (i / N) * Math.PI * 2;
+    const wobble = 1 + (rnd(seed + i * 4.3) - 0.5) * 0.22;
+    pts.push([cx + Math.cos(a) * rx * wobble, cy + Math.sin(a) * ry * wobble]);
+  }
+  pts.push(pts[0]);
+  ctx.fillStyle = color;
+  handFill(pts, seed, 2.5);
+  ctx.strokeStyle = NAVY;
+  ctx.lineWidth = LW;
+  handStroke(pts, seed, 2.5, true);
+
+  const texN = 4;
+  ctx.strokeStyle = NAVY;
+  ctx.lineWidth = Math.max(1.8, LW * 0.65);
+  for(let j = 0; j < texN; j++){
+    const sa = rnd(seed + 40 + j) * Math.PI * 2;
+    const sr = rnd(seed + 60 + j) * rx * 0.55;
+    const sx = cx + Math.cos(sa) * sr;
+    const sy = cy + Math.sin(sa) * sr;
+    const len = rx * (0.2 + rnd(seed + 80 + j) * 0.2);
+    const ang = -0.6 + rnd(seed + 90 + j) * 1.2;
+    handStroke([
+      [sx, sy],
+      [sx + Math.cos(ang) * len * 0.5, sy + Math.sin(ang) * len * 0.5 - 2],
+      [sx + Math.cos(ang) * len, sy + Math.sin(ang) * len]
+    ], seed + 100 + j, 1.5, false);
+  }
+}
+
+function drawDownTree(x, crownY, tw, seed){
+  const trunkW = Math.max(8, tw * 0.11);
+  const tx = x + tw * 0.5;
+  ctx.fillStyle = YEL;
+  ctx.fillRect(tx - trunkW * 0.5, 0, trunkW, Math.max(0, crownY));
+  ctx.strokeStyle = NAVY;
+  ctx.lineWidth = LW;
+  handStroke([[tx - trunkW * 0.5, 0], [tx - trunkW * 0.5, crownY]], seed, 1.8, false);
+  handStroke([[tx + trunkW * 0.5, 0], [tx + trunkW * 0.5, crownY]], seed + 1, 1.8, false);
+
+  const crX = tw * 0.5;
+  const crY = Math.max(30, Math.min(crownY * 0.35, 70));
+  drawCrownBlob(tx, crownY - crY * 0.7, crX, crY, seed + 2, YEL);
+}
+
+function drawUpTree(x, crownY, tw, seed){
+  const trunkW = Math.max(8, tw * 0.11);
+  const tx = x + tw * 0.5;
+  ctx.fillStyle = YEL;
+  ctx.fillRect(tx - trunkW * 0.5, crownY, trunkW, Math.max(0, groundY - crownY));
+  ctx.strokeStyle = NAVY;
+  ctx.lineWidth = LW;
+  handStroke([[tx - trunkW * 0.5, crownY], [tx - trunkW * 0.5, groundY]], seed, 1.8, false);
+  handStroke([[tx + trunkW * 0.5, crownY], [tx + trunkW * 0.5, groundY]], seed + 1, 1.8, false);
+
+  const crX = tw * 0.5;
+  const crY = Math.max(30, Math.min((groundY - crownY) * 0.35, 70));
+  drawCrownBlob(tx, crownY + crY * 0.7, crX, crY, seed + 2, YEL);
+
+  const rW = tw * 0.22;
+  handStroke([[tx - trunkW * 0.5, groundY - 14], [tx - trunkW * 0.5 - rW, groundY]], seed + 6, 1.5, false);
+  handStroke([[tx + trunkW * 0.5, groundY - 14], [tx + trunkW * 0.5 + rW, groundY]], seed + 7, 1.5, false);
+}
+
+function drawGround(){
+  ctx.fillStyle = YEL;
+  ctx.fillRect(0, groundY, W, GH);
+
+  ctx.strokeStyle = NAVY;
+  ctx.lineWidth = LW;
+  const step = 28;
+  const pts = [];
+  for(let gx = -step; gx <= W + step; gx += step){
+    const h = (rnd((gx + Math.floor(scrollX)) * 0.05) - 0.5) * 2;
+    pts.push([gx, groundY + h]);
+  }
+  handStroke(pts, 42, 1.5, false);
+
+  ctx.lineWidth = Math.max(1.8, LW * 0.7);
+  const tuftSpacing = 70;
+  const startK = Math.floor((scrollX - 40) / tuftSpacing);
+  const endK = Math.ceil((scrollX + W + 40) / tuftSpacing);
+  for(let k = startK; k <= endK; k++){
+    const tx = k * tuftSpacing - scrollX;
+    const s = k * 19.3;
+    const blades = 2 + Math.floor(rnd(s) * 3);
+    for(let b = 0; b < blades; b++){
+      const bx = tx + (b - blades / 2) * 4;
+      const by = groundY;
+      const bh = 7 + rnd(s + b * 3) * 9;
+      const lean = (rnd(s + b * 5) - 0.5) * 8;
+      handStroke([[bx, by], [bx + lean, by - bh]], s + b, 1.2, false);
+    }
+  }
+
+  const stripeY = groundY + GH * 0.62;
+  const spts = [];
+  for(let gx = -step; gx <= W + step; gx += step){
+    spts.push([gx, stripeY + (rnd((gx + 120) * 0.08) - 0.5) * 1.5]);
+  }
+  ctx.strokeStyle = NAVY;
+  ctx.lineWidth = Math.max(1.5, LW * 0.55);
+  handStroke(spts, 99, 1.2, false);
+}
+
+function drawBackHills(){
+  ctx.strokeStyle = NAVY;
+  ctx.lineWidth = Math.max(1.8, LW * 0.65);
+  ctx.globalAlpha = 0.35;
+  const step = 80;
+  const pts = [];
+  const para = scrollX * 0.15;
+  const startX = -step;
+  const endX = W + step;
+  for(let x = startX; x <= endX; x += step){
+    const worldX = x + para;
+    const y = groundY - 50 - Math.sin(worldX * 0.003) * 45 - Math.cos(worldX * 0.007) * 20;
+    pts.push([x, y]);
+  }
+  handStroke(pts, 501, 2.5, false);
+  ctx.globalAlpha = 1;
+}
+
+function drawCloud(cx, cy, s, seed){
+  ctx.strokeStyle = NAVY;
+  ctx.fillStyle = LIGHT;
+  ctx.lineWidth = Math.max(1.8, LW * 0.65);
+  const pts = [];
+  const N = 10;
+  for(let i = 0; i < N; i++){
+    const a = (i / N) * Math.PI * 2;
+    const rx = s * (1 + 0.3 * Math.cos(a));
+    const ry = s * 0.45 * (1 + 0.25 * Math.sin(a));
+    pts.push([cx + Math.cos(a) * rx, cy + Math.sin(a) * ry]);
+  }
+  pts.push(pts[0]);
+  handFill(pts, seed, 2);
+  handStroke(pts, seed, 2, true);
+}
+
+function drawRock(x, y, w, seed){
+  const h = w * 0.6;
+  const pts = [
+    [x - w * 0.5, y],
+    [x - w * 0.45, y - h * 0.6],
+    [x - w * 0.1, y - h],
+    [x + w * 0.35, y - h * 0.85],
+    [x + w * 0.5, y]
+  ];
+  ctx.fillStyle = LIGHT;
+  handFill(pts, seed, 1.5);
+  ctx.strokeStyle = NAVY;
+  ctx.lineWidth = Math.max(1.8, LW * 0.65);
+  handStroke(pts, seed, 1.5, true);
+  handStroke([[x - w * 0.1, y - h], [x, y]], seed + 2, 1, false);
+}
+
+function drawBush(x, y, w, seed){
+  drawCrownBlob(x, y - w * 0.3, w * 0.5, w * 0.32, seed, YEL);
+}
+
+function spawnTree(atX){
+  const minTop = 60;
+  const maxTop = groundY - GAP - 60;
+  const topH = minTop + Math.random() * Math.max(10, maxTop - minTop);
+  trees.push({
+    x: atX,
+    tw: TW,
+    topH: topH,
+    botY: topH + GAP,
+    seed: Math.random() * 1000,
+    passed: false
+  });
+}
+
+function spawnProp(atX){
+  const r = Math.random();
+  if(r < 0.35){
+    props.push({ type: 'bush', x: atX, y: groundY, w: 26 + Math.random() * 22, seed: Math.random() * 1000 });
+  } else if(r < 0.65){
+    props.push({ type: 'rock', x: atX, y: groundY, w: 20 + Math.random() * 22, seed: Math.random() * 1000 });
+  } else {
+    props.push({ type: 'cloud', x: atX, y: 50 + Math.random() * (H * 0.3), w: 38 + Math.random() * 32, seed: Math.random() * 1000 });
+  }
+}
+
+function resetGame(){
+  metrics();
+  plane.x = PX;
+  plane.y = H * 0.44;
+  plane.vy = 0;
+  trees = [];
+  props = [];
+  scrollX = 0;
+  score = 0;
+  curEl.textContent = 0;
+  state = 'ready';
+  modal.classList.remove('show');
+  hint.classList.remove('hidden');
+  homeBtn.classList.remove('hidden');
+
+  let curX = W + 120;
+  for(let i = 0; i < 4; i++){
+    spawnTree(curX);
+    curX += SPACE;
+  }
+  for(let px = 60; px < W * 2; px += 180 + Math.random() * 140){
+    spawnProp(px);
+  }
+}
+
+function flap(){
+  if(state === 'ready'){
+    state = 'play';
+    hint.classList.add('hidden');
+    homeBtn.classList.add('hidden');
+    plane.vy = FLAP;
+    return;
+  }
+  if(state === 'play'){
+    plane.vy = FLAP;
+  }
+}
+
+function gameOver(){
+  if(state === 'over') return;
+  state = 'over';
+  if(score > best){
+    best = score;
+    try{ localStorage.setItem('tr404best', best); }catch(e){}
+    bestEl.textContent = best;
+  }
+  finalEl.textContent = score === 1 ? '1 gap cleared' : `${score} gaps cleared`;
+  modal.classList.add('show');
+  homeBtn.classList.remove('hidden');
+}
+
+function circleBoxCollision(cx, cy, r, rx, ry, rw, rh){
+  const nearX = Math.max(rx, Math.min(cx, rx + rw));
+  const nearY = Math.max(ry, Math.min(cy, ry + rh));
+  const dx = cx - nearX;
+  const dy = cy - nearY;
+  return (dx * dx + dy * dy) < (r * r);
+}
+
+function checkCollisions(){
+  if(plane.y - PR < 0) return true;
+  if(plane.y + PR > groundY) return true;
+
+  for(const t of trees){
+    if(t.x > plane.x + PR + 40 || t.x + t.tw < plane.x - PR - 40) continue;
+    if(circleBoxCollision(plane.x, plane.y, PR, t.x, 0, t.tw, t.topH)) return true;
+    if(circleBoxCollision(plane.x, plane.y, PR, t.x, t.botY, t.tw, groundY - t.botY)) return true;
+    const tx = t.x + t.tw * 0.5;
+    const crY = Math.max(30, Math.min(t.topH * 0.35, 70));
+    const cyTop = t.topH - crY * 0.7;
+    const dxT = plane.x - tx, dyT = plane.y - cyTop;
+    if((dxT*dxT)/(t.tw*0.5*t.tw*0.5) + (dyT*dyT)/(crY*crY) < 1.05) return true;
+
+    const botH = groundY - t.botY;
+    const bcrY = Math.max(30, Math.min(botH * 0.35, 70));
+    const cyBot = t.botY + bcrY * 0.7;
+    const dxB = plane.x - tx, dyB = plane.y - cyBot;
+    if((dxB*dxB)/(t.tw*0.5*t.tw*0.5) + (dyB*dyB)/(bcrY*bcrY) < 1.05) return true;
+  }
+  return false;
+}
+
+let lastT = 0;
+function loop(t){
+  if(!lastT) lastT = t;
+  const dt = Math.min(34, t - lastT);
+  lastT = t;
+
+  update(dt);
+  render();
+  requestAnimationFrame(loop);
+}
+
+function update(dt){
+  const speed = (dt / 16.666);
+
+  if(state === 'ready'){
+    plane.y = H * 0.44 + Math.sin(Date.now() * 0.0035) * 7;
+    return;
+  }
+
+  if(state === 'play'){
+    plane.vy += GRAV * speed;
+    plane.y += plane.vy * speed;
+
+    const scrollSpeed = (3.4 + Math.min(score * 0.08, 2.2)) * speed;
+    scrollX += scrollSpeed;
+
+    for(const t of trees){
+      t.x -= scrollSpeed;
+      if(!t.passed && t.x + t.tw < plane.x){
+        t.passed = true;
+        score++;
+        curEl.textContent = score;
+        if(score > best){
+          best = score;
+          bestEl.textContent = best;
+        }
+      }
+    }
+
+    for(const p of props){
+      const factor = p.type === 'cloud' ? 0.35 : 1;
+      p.x -= scrollSpeed * factor;
+    }
+    props = props.filter(p => p.x > -120);
+
+    const rightTree = trees.reduce((m, t) => Math.max(m, t.x), 0);
+    if(rightTree < W + SPACE){
+      spawnTree(rightTree + SPACE);
+    }
+    trees = trees.filter(t => t.x + t.tw > -60);
+
+    if(Math.random() < 0.03){
+      const lastP = props[props.length - 1];
+      if(!lastP || lastP.x < W + 100){
+        spawnProp(W + 100 + Math.random() * 80);
+      }
+    }
+
+    if(checkCollisions()){
+      gameOver();
+    }
+  }
+
+  if(state === 'over'){
+    if(plane.y + PR < groundY){
+      plane.vy += GRAV * 1.4 * speed;
+      plane.y += plane.vy * speed;
+      if(plane.y + PR >= groundY){
+        plane.y = groundY - PR;
+      }
+    }
+  }
+}
+
+function render(){
+  ctx.save();
+  ctx.scale(dpr, dpr);
+
+  ctx.fillStyle = LIGHT;
+  ctx.fillRect(0, 0, W, H);
+
+  drawBackHills();
+
+  for(const p of props){
+    if(p.type === 'cloud') drawCloud(p.x, p.y, p.w, p.seed);
+  }
+
+  for(const t of trees){
+    drawDownTree(t.x, t.topH, t.tw, t.seed);
+    drawUpTree(t.x, t.botY, t.tw, t.seed + 10);
+  }
+
+  for(const p of props){
+    if(p.type === 'rock') drawRock(p.x, p.y, p.w, p.seed);
+    else if(p.type === 'bush') drawBush(p.x, p.y, p.w, p.seed);
+  }
+
+  drawGround();
+  drawPlane();
+
+  ctx.restore();
+}
+
+function drawPlane(){
+  ctx.save();
+  ctx.translate(plane.x, plane.y);
+
+  let targetAng = 0;
+  if(state === 'ready'){
+    targetAng = -0.06 + Math.sin(Date.now() * 0.0035) * 0.08;
+  } else if(state === 'play'){
+    targetAng = Math.max(-0.6, Math.min(plane.vy * 0.065, 0.95));
+  } else {
+    targetAng = 0.9;
+  }
+
+  ctx.rotate(targetAng - BASE_ANG);
+
+  const drawScale = (PR * 2.8) / PSVG_W;
+  ctx.scale(drawScale, drawScale);
+  ctx.drawImage(planeImg, -P_CX, -P_CY);
+
+  ctx.restore();
+}
+
+function resize(){
+  dpr = window.devicePixelRatio || 1;
+  W = window.innerWidth;
+  H = window.innerHeight;
+  c.width = Math.floor(W * dpr);
+  c.height = Math.floor(H * dpr);
+  c.style.width = W + 'px';
+  c.style.height = H + 'px';
+  metrics();
+  if(state === 'ready') resetGame();
+}
+
+window.addEventListener('resize', resize);
+window.addEventListener('keydown', e => {
+  if(e.code === 'Space'){
+    e.preventDefault();
+    if(state === 'over'){ resetGame(); flap(); }
+    else flap();
+  }
+});
+c.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  if(state === 'over') return;
+  flap();
+});
+retry.addEventListener('click', e => {
+  e.stopPropagation();
+  resetGame();
+  flap();
+});
+
+resize();
+planeImg.onload = () => { render(); };
+requestAnimationFrame(loop);
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quiz Time: Digital Marketing</title>
+<link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#efe4de; --grid:#d3c3bf; --card:#fbf8e8; --ink:#111111; --edge:#111111; --sh:#111111;
+  --lav:#d6a9e0; --pink:#ff2fb3; --yellow:#f6cf5a; --mint:#a7e07a; --sky:#9fdce6;
+  --good:#a7e07a; --bad:#ff9aa8; --muted:#4a4250; --onlav:#111111;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#1e1824; --grid:#352c40; --card:#2b2334; --ink:#f6eee4; --edge:#f6eee4; --sh:#000000;
+    --muted:#c5b8d0;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#1e1824; --grid:#352c40; --card:#2b2334; --ink:#f6eee4; --edge:#f6eee4; --sh:#000000;
+  --muted:#c5b8d0;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{height:100%}
+body{
+  margin:0;min-height:100%;color:var(--ink);
+  font:500 17px/1.5 "Poppins",system-ui,sans-serif;
+  background-color:var(--bg);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:40px 40px;
+  display:flex;justify-content:center;padding:28px 18px 40px;
+}
+main{width:100%;max-width:560px;text-align:center}
+.hidden{display:none}
+button,a{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:4px solid var(--pink);outline-offset:3px}
+
+/* sticker title */
+.title{display:flex;justify-content:center;align-items:center;gap:6px;transform:rotate(-3deg);margin:8px 0 22px;flex-wrap:nowrap}
+.title span{
+  font-family:"Bowlby One","Poppins",Impact,sans-serif;font-size:clamp(2.6rem,13vw,4.2rem);line-height:1;letter-spacing:.01em;
+  color:#fff;-webkit-text-stroke:2px #111;paint-order:stroke fill;text-shadow:4px 4px 0 var(--pink);
+}
+.title b{
+  width:clamp(44px,12vw,64px);height:clamp(44px,12vw,64px);border-radius:50%;background:var(--lav);
+  border:3px solid #111;display:grid;place-items:center;color:#111;
+  font-family:"Bowlby One",sans-serif;font-size:clamp(1.5rem,6vw,2.2rem);
+}
+.title.small{margin:0 0 18px}
+.title.small span{font-size:clamp(1.7rem,8vw,2.4rem);text-shadow:3px 3px 0 var(--pink);-webkit-text-stroke:1.5px #111}
+.title.small b{width:38px;height:38px;font-size:1.3rem;border-width:2px}
+
+/* tilted topic pills */
+.pills{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin:0 0 22px}
+.pill{border:3px solid #111;border-radius:999px;padding:6px 18px;color:#111;font-family:"Bowlby One",sans-serif;font-size:1rem}
+.pill:nth-child(1){background:var(--yellow);transform:rotate(-4deg)}
+.pill:nth-child(2){background:var(--sky);transform:rotate(3deg)}
+.pill:nth-child(3){background:var(--mint);transform:rotate(-2deg)}
+.pill:nth-child(4){background:var(--lav);transform:rotate(4deg)}
+
+/* cards */
+.card{
+  background:var(--card);border:3px solid var(--edge);border-radius:28px;padding:34px 24px;
+  box-shadow:0 12px 0 var(--lav),0 12px 0 3px var(--edge);margin-bottom:34px;
+}
+.card h1,.card h2{font-size:clamp(1.35rem,5.5vw,1.8rem);line-height:1.25;margin:0 0 12px;font-weight:700}
+.muted{color:var(--muted)}
+p{margin:0 0 16px}
+
+/* chunky pill buttons */
+.btn,.opt{
+  display:block;width:100%;max-width:400px;margin:0 auto;
+  border:3px solid var(--edge);border-radius:999px;padding:14px 26px;
+  box-shadow:-4px 7px 0 var(--sh);color:var(--onlav);
+  font-weight:700;text-align:center;text-decoration:none;position:relative;
+  transition:transform .08s ease,box-shadow .08s ease;
+}
+.btn{background:var(--yellow)}
+.btn.big{font-size:1.15rem;padding:16px 26px}
+.opt{background:var(--lav);margin-bottom:20px;font-size:1.05rem}
+.opt:nth-child(2n){max-width:420px}
+.btn:active,.opt:active:not([disabled]){transform:translate(-3px,5px);box-shadow:-1px 2px 0 var(--sh)}
+.opt[disabled]{cursor:default}
+.opt.right{background:var(--good)}
+.opt.wrong{background:var(--bad)}
+.opt .mark{position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:1.2rem}
+.opts{margin:26px 0 8px}
+
+/* progress: chunky bar */
+.meter{height:22px;border:3px solid var(--edge);border-radius:999px;background:var(--card);overflow:hidden;margin:0 auto 10px;max-width:420px}
+.meter i{display:block;height:100%;width:0;background:var(--pink);border-right:3px solid var(--edge);transition:width .35s ease}
+.meter i.zero{border-right-width:0}
+.count{font-weight:700;margin:0 0 22px}
+
+.why{background:var(--card);border:3px solid var(--edge);border-radius:20px;padding:14px 18px;margin:12px auto 22px;max-width:420px;text-align:left;font-size:.98rem}
+
+/* form */
+label{display:block;font-weight:700;margin:16px auto 6px;max-width:400px;text-align:left;padding-left:20px}
+input[type=text],input[type=email]{
+  display:block;width:100%;max-width:400px;margin:0 auto;font:inherit;font-weight:600;color:var(--ink);
+  background:var(--card);border:3px solid var(--edge);border-radius:999px;padding:13px 22px;box-shadow:-4px 6px 0 var(--sh);
+}
+.err{color:#c4153a;font-weight:700;min-height:1.5em;margin:14px 0 6px;font-size:.95rem}
+:root[data-theme="dark"] .err{color:#ff8aa6}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .err{color:#ff8aa6}}
+
+/* result */
+.score{font-family:"Bowlby One",sans-serif;font-size:clamp(4rem,20vw,6rem);line-height:1;color:#fff;-webkit-text-stroke:3px #111;paint-order:stroke fill;text-shadow:5px 5px 0 var(--pink);margin:6px 0 6px}
+.score small{font-size:.35em;text-shadow:3px 3px 0 var(--pink)}
+.tips{list-style:none;padding:0;margin:18px auto 22px;max-width:420px;text-align:left}
+.tips li{background:var(--card);border:3px solid var(--edge);border-radius:18px;padding:10px 16px;margin-bottom:10px;font-size:.96rem}
+.offer{background:var(--yellow);color:#111;border:3px solid #111;border-radius:24px;padding:20px 18px;margin:8px 0 18px;transform:rotate(-1deg)}
+.offer h3{margin:0 0 6px;font-size:1.15rem}
+.offer p{margin:0 0 14px;font-size:.95rem}
+.offer .btn{background:#fff;box-shadow:-4px 6px 0 #111}
+.link{background:none;border:0;color:var(--ink);text-decoration:underline;font-weight:600;padding:10px}
+@media (prefers-reduced-motion:reduce){.btn,.opt,.meter i{transition:none}}
+</style>
+</head>
+<body>
+<main>
+  <!-- Start -->
+  <section id="start" class="hidden-not">
+    <div class="title" role="heading" aria-level="1" aria-label="Quiz time"><span>QUIZ</span><b aria-hidden="true">?</b><span>TIME</span></div>
+    <div class="pills" aria-hidden="true"><span class="pill">SEO</span><span class="pill">ADS</span><span class="pill">CTR</span><span class="pill">A/B</span></div>
+    <div class="card">
+      <h2>How well do you know digital marketing?</h2>
+      <p class="muted">Six quick questions on SEO, ads, and conversions. Finish to get your score and a free tip sheet.</p>
+      <button class="btn big" id="startBtn">Start the quiz</button>
+    </div>
+  </section>
+
+  <!-- Question -->
+  <section id="quiz" class="hidden">
+    <div class="title small" aria-hidden="true"><span>QUIZ</span><b>?</b><span>TIME</span></div>
+    <div class="meter" aria-hidden="true"><i id="bar" class="zero"></i></div>
+    <p class="count" id="count"></p>
+    <div class="card">
+      <h2 id="q"></h2>
+    </div>
+    <div class="opts" id="opts" role="group" aria-labelledby="q"></div>
+    <div id="feedback" class="hidden" aria-live="polite">
+      <p class="why" id="why"></p>
+      <button class="btn" id="nextBtn">Next question</button>
+    </div>
+  </section>
+
+  <!-- Lead capture -->
+  <section id="gate" class="hidden">
+    <div class="title small" aria-hidden="true"><span>QUIZ</span><b>?</b><span>TIME</span></div>
+    <div class="card">
+      <h2>Your score is ready</h2>
+      <p class="muted">Enter your details to see your result and get a free tip sheet by email.</p>
+      <label for="name">Your name</label>
+      <input type="text" id="name" autocomplete="name">
+      <label for="email">Work email</label>
+      <input type="email" id="email" autocomplete="email">
+      <p class="err" id="err" role="alert"></p>
+      <button class="btn" id="showBtn">Show my result</button>
+    </div>
+  </section>
+
+  <!-- Result -->
+  <section id="result" class="hidden">
+    <div class="card">
+      <p class="muted" id="hello"></p>
+      <div class="score"><span id="scoreNum"></span><small>/6</small></div>
+      <h2 id="level"></h2>
+      <p id="levelText"></p>
+      <ul class="tips" id="tips"></ul>
+      <div class="offer">
+        <h3>Get a free website audit</h3>
+        <p>We’ll review your SEO, ads, and landing pages and send you three quick wins.</p>
+        <a class="btn" href="#book">Book my free audit</a>
+      </div>
+      <button class="link" id="again">Take the quiz again</button>
+    </div>
+  </section>
+</main>
+
+<script>
+var QUESTIONS = [
+  {q:"What does SEO stand for?",
+   o:["Social Engagement Optimization","Search Engine Optimization","Site Evaluation Operations","Search Entry Overview"],
+   a:1, why:"SEO is the practice of improving your site so it ranks higher in unpaid search results."},
+  {q:"A visitor arrives from an unpaid Google result. What kind of traffic is that?",
+   o:["Paid traffic","Referral traffic","Organic traffic","Direct traffic"],
+   a:2, why:"Organic traffic comes from unpaid search results. You earn it with content and SEO, not ad spend."},
+  {q:"In online advertising, what does CTR measure?",
+   o:["The share of people who click after seeing your ad","The cost of each sale","How long people stay on your site","The number of ads you run"],
+   a:0, why:"Click-through rate is clicks divided by impressions. A higher CTR usually means your ad is relevant."},
+  {q:"What is the main job of a landing page?",
+   o:["Show every product you sell","Tell the full company history","Get visitors to take one specific action","Link to as many pages as possible"],
+   a:2, why:"The best landing pages focus on a single goal, such as a sign-up or a booking, and remove distractions."},
+  {q:"What does a high bounce rate usually tell you?",
+   o:["Visitors leave after viewing only one page","Visitors are buying more","Your emails are being opened","Your site loads very fast"],
+   a:0, why:"Bounce rate is the share of visits that end after one page. It can point to a mismatch between the ad or search result and the page."},
+  {q:"What is A/B testing?",
+   o:["Running two ad budgets at once","Comparing two versions of something to see which performs better","Testing your site on two browsers","Ranking your two best keywords"],
+   a:1, why:"In an A/B test, half your audience sees version A and half sees version B, so you can keep the winner."}
+];
+
+var LEVELS = [
+  {min:0,name:"Getting started",text:"You’re at the start of the journey, and that’s a good place to be. A few core ideas will move you quickly.",
+   tips:["Learn how SEO, paid ads, and email work together.","Pick one channel and track one number for 30 days.","Read your site’s analytics weekly."]},
+  {min:3,name:"Rising marketer",text:"You know the basics. Now it’s about turning that knowledge into steady, measurable results.",
+   tips:["Set one clear goal for every landing page.","Start a simple A/B test on your main headline.","Review your bounce rate on top pages."]},
+  {min:5,name:"Skilled strategist",text:"You clearly understand how the pieces fit. Fine-tuning and testing will unlock your next level of growth.",
+   tips:["Build a testing calendar for the next quarter.","Connect ad data to actual sales, not just clicks.","Look for pages with high traffic and low conversions."]},
+  {min:6,name:"Digital marketing pro",text:"Perfect score. You know your stuff. The best use of your time now is scaling what already works.",
+   tips:["Document your top-performing campaigns.","Test new channels with small budgets.","Automate reporting so you can focus on strategy."]}
+];
+
+var $ = function(id){return document.getElementById(id)};
+var LETTERS = ["a","b","c","d"];
+var cur = 0, score = 0, answered = false;
+
+function show(id){
+  ["start","quiz","gate","result"].forEach(function(s){$(s).classList.toggle("hidden", s!==id)});
+  window.scrollTo(0,0);
+}
+function setBar(n){
+  var pct = n/QUESTIONS.length*100;
+  $("bar").style.width = pct + "%";
+  $("bar").classList.toggle("zero", pct===0);
+}
+
+function render(){
+  var item = QUESTIONS[cur];
+  answered = false;
+  $("count").textContent = "Question " + (cur+1) + " of " + QUESTIONS.length;
+  $("q").textContent = item.q;
+  setBar(cur);
+  $("feedback").classList.add("hidden");
+  var box = $("opts"); box.innerHTML = "";
+  item.o.forEach(function(text,i){
+    var b = document.createElement("button");
+    b.className = "opt"; b.type = "button";
+    b.textContent = LETTERS[i] + ") " + text;
+    b.addEventListener("click", function(){choose(i)});
+    box.appendChild(b);
+  });
+  $("nextBtn").textContent = cur === QUESTIONS.length-1 ? "See my score" : "Next question";
+}
+
+function choose(i){
+  if(answered) return;
+  answered = true;
+  var item = QUESTIONS[cur];
+  var btns = $("opts").children;
+  for(var k=0;k<btns.length;k++){
+    btns[k].disabled = true;
+    if(k===item.a){btns[k].classList.add("right"); btns[k].insertAdjacentHTML("beforeend",'<span class="mark" aria-label="Correct">✓</span>');}
+    else if(k===i){btns[k].classList.add("wrong"); btns[k].insertAdjacentHTML("beforeend",'<span class="mark" aria-label="Incorrect">✗</span>');}
+  }
+  if(i===item.a) score++;
+  $("why").textContent = (i===item.a ? "Correct! " : "Not quite. ") + item.why;
+  $("feedback").classList.remove("hidden");
+  $("nextBtn").focus();
+}
+
+$("startBtn").addEventListener("click", function(){cur=0;score=0;show("quiz");render();});
+$("nextBtn").addEventListener("click", function(){
+  cur++;
+  if(cur < QUESTIONS.length){render();}
+  else{setBar(QUESTIONS.length); show("gate"); $("name").focus();}
+});
+
+$("showBtn").addEventListener("click", function(){
+  var name = $("name").value.trim(), email = $("email").value.trim();
+  if(!name){$("err").textContent="Enter your name."; $("name").focus(); return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){$("err").textContent="Enter a valid email address, like name@company.com."; $("email").focus(); return;}
+  $("err").textContent = "";
+  /* On your live site, send {name, email, score} to your email tool or CRM here. */
+  var lvl = LEVELS[0];
+  LEVELS.forEach(function(l){ if(score >= l.min) lvl = l; });
+  $("hello").textContent = "Thanks, " + name + "! Here’s how you did.";
+  $("scoreNum").textContent = score;
+  $("level").textContent = lvl.name;
+  $("levelText").textContent = lvl.text;
+  $("tips").innerHTML = "";
+  lvl.tips.forEach(function(t){var li=document.createElement("li"); li.textContent=t; $("tips").appendChild(li);});
+  show("result");
+});
+
+$("again").addEventListener("click", function(){$("name").value="";$("email").value="";show("start");});
+</script>
+</body>
+</html>

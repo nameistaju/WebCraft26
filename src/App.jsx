@@ -11,35 +11,73 @@ import ContactModal from './components/ContactModal';
 import AboutPage from './pages/AboutPage';
 import ExperiencePage from './pages/ExperiencePage';
 import WorkPage from './pages/WorkPage';
+import CaseStudyPage from './pages/CaseStudyPage';
+import NotFoundPage from './pages/NotFoundPage';
 import WebcraftIntro from './components/WebcraftIntro';
+import SpinWheelModal from './components/SpinWheelModal';
+import SpinWheelTrigger from './components/SpinWheelTrigger';
 
 export default function App() {
   const [currentView, setCurrentView] = useState(() => {
-    if (window.location.hash === '#work') return 'work';
-    if (window.location.hash === '#about') return 'about';
-    if (window.location.hash === '#experience') return 'experience';
-    return 'home';
+    const hash = (window.location.hash || '').split('?')[0];
+    if (!hash || hash === '#' || hash === '#home' || hash === '#contact' || hash === '#spin' || hash === '#spin-win') return 'home';
+    if (hash === '#work') return 'work';
+    if (hash === '#about') return 'about';
+    if (hash === '#experience') return 'experience';
+    if (hash === '#mvp' || hash === '#yumm-yum' || hash === '#yum-yum' || hash === '#merci' || hash.startsWith('#project/')) return 'project';
+    if (hash === '#404') return '404';
+    return '404';
+  });
+  const [projectSlug, setProjectSlug] = useState(() => {
+    const hash = window.location.hash;
+    if (hash.startsWith('#project/')) {
+      const slug = hash.replace('#project/', '');
+      return slug === 'yum-yum' ? 'yumm-yum' : slug;
+    }
+    if (hash === '#merci') return 'merci';
+    if (hash === '#yumm-yum' || hash === '#yum-yum') return 'yumm-yum';
+    if (hash === '#mvp') return 'mvp';
+    return 'merci';
   });
   const [contactOpen, setContactOpen] = useState(() => {
     return window.location.hash === '#contact';
+  });
+  const [spinOpen, setSpinOpen] = useState(() => {
+    return window.location.hash === '#spin' || window.location.hash === '#spin-win';
   });
   const [experienceProgress, setExperienceProgress] = useState(0);
 
   useEffect(() => {
     const handleHashChange = () => {
-      if (window.location.hash === '#work') {
+      const hash = (window.location.hash || '').split('?')[0];
+      if (hash === '#work') {
         setCurrentView('work');
         window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else if (window.location.hash === '#about') {
+      } else if (hash === '#about') {
         setCurrentView('about');
         window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else if (window.location.hash === '#experience') {
+      } else if (hash === '#experience') {
         setCurrentView('experience');
         window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else if (window.location.hash === '#contact') {
+      } else if (hash === '#contact') {
         setContactOpen(true);
-      } else {
+      } else if (hash === '#spin' || hash === '#spin-win') {
+        setSpinOpen(true);
+      } else if (hash === '#mvp' || hash === '#yumm-yum' || hash === '#yum-yum' || hash === '#merci' || hash.startsWith('#project/')) {
+        let slug = hash.startsWith('#project/')
+          ? hash.replace('#project/', '')
+          : (hash === '#merci' ? 'merci' : (hash === '#yumm-yum' || hash === '#yum-yum' ? 'yumm-yum' : 'mvp'));
+        if (slug === 'yum-yum') slug = 'yumm-yum';
+        setProjectSlug(slug);
+        setCurrentView('project');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (hash === '#404') {
+        setCurrentView('404');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (!hash || hash === '#' || hash === '#home') {
         setCurrentView('home');
+      } else {
+        setCurrentView('404');
       }
     };
 
@@ -47,7 +85,7 @@ export default function App() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  const handleNavigate = (view) => {
+  const handleNavigate = (view, slug = 'mvp') => {
     setCurrentView(view);
     if (view === 'work') {
       window.location.hash = 'work';
@@ -57,6 +95,13 @@ export default function App() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (view === 'experience') {
       window.location.hash = 'experience';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (view === 'project') {
+      setProjectSlug(slug);
+      window.location.hash = `project/${slug}`;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (view === '404') {
+      window.location.hash = '404';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       window.location.hash = '';
@@ -69,16 +114,27 @@ export default function App() {
       {/* 0. WebCraft Brand Intro Animation */}
       <WebcraftIntro />
 
-      {/* Top Header & Navigation Bar */}
-      <Navbar
-        onOpenContact={() => setContactOpen(true)}
-        currentView={currentView}
-        onNavigate={handleNavigate}
-        experienceProgress={experienceProgress}
-      />
+      {/* Top Header & Navigation Bar (Hidden on Case Study page and 404 page) */}
+      {currentView !== 'project' && currentView !== '404' && (
+        <Navbar
+          onOpenContact={() => setContactOpen(true)}
+          currentView={currentView}
+          onNavigate={handleNavigate}
+          experienceProgress={experienceProgress}
+        />
+      )}
 
-      {/* Main View: Home, Work Page, About Page, or Experience Page */}
-      {currentView === 'experience' ? (
+      {/* Main View: Project Case Study, Experience Page, About Page, Work Page, 404 Page, or Home */}
+      {currentView === '404' ? (
+        <NotFoundPage onNavigateHome={() => handleNavigate('home')} />
+      ) : currentView === 'project' ? (
+        <CaseStudyPage
+          slug={projectSlug}
+          onBack={() => handleNavigate('work')}
+          onOpenContact={() => setContactOpen(true)}
+          onNavigateProject={(slug) => handleNavigate('project', slug)}
+        />
+      ) : currentView === 'experience' ? (
         <ExperiencePage
           onBack={() => handleNavigate('home')}
           onOpenContact={() => setContactOpen(true)}
@@ -117,6 +173,21 @@ export default function App() {
       <ContactModal
         isOpen={contactOpen}
         onClose={() => setContactOpen(false)}
+      />
+
+      {/* Floating Spin & Win Launcher Button (Hidden on 404 page) */}
+      {currentView !== '404' && (
+        <SpinWheelTrigger onOpen={() => setSpinOpen(true)} />
+      )}
+
+      {/* Spin & Win Modal Experience */}
+      <SpinWheelModal
+        isOpen={spinOpen}
+        onClose={() => setSpinOpen(false)}
+        onOpenContact={() => {
+          setSpinOpen(false);
+          setContactOpen(true);
+        }}
       />
     </div>
   );

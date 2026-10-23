@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Spin & Win – Webcraft Special</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=Caveat:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eeeafd; --ray:rgba(255,255,255,.55); --ink:#0b0b12; --muted:#6b6b7b;
+  --blue:#0b5cff; --blue2:#1d6bff; --wheel-a:#dbe8fd; --wheel-b:#fafafc; --wheel-c:#fdf1da;
+  --label:#10101a; --card:#fff; --bulb:#fff6d6; --glow:255,196,60;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#14122b; --ray:rgba(120,110,255,.08); --ink:#f4f4fb; --muted:#a3a3bd;
+    --wheel-a:#27385f; --wheel-b:#2a2c45; --wheel-c:#463c34; --label:#f4f4fb; --card:#1f1d3d;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14122b; --ray:rgba(120,110,255,.08); --ink:#f4f4fb; --muted:#a3a3bd;
+  --wheel-a:#27385f; --wheel-b:#2a2c45; --wheel-c:#463c34; --label:#f4f4fb; --card:#1f1d3d;
+}
+html,body{margin:0;min-height:100%}
+body{
+  font-family:'Inter',system-ui,sans-serif; color:var(--ink);
+  background:repeating-conic-gradient(from 0deg at 50% 45%,var(--ray) 0 6deg,transparent 6deg 12deg),var(--bg);
+  display:flex; flex-direction:column; align-items:center; padding:28px 16px 36px; overflow-x:hidden;
+}
+.eyebrow{font-size:13px;font-weight:700;letter-spacing:.35em;color:var(--blue);margin:0 0 6px}
+h1{font-size:clamp(44px,9vw,92px);line-height:1;margin:0;font-weight:800;letter-spacing:-.04em}
+h1 span{color:var(--blue)}
+.sub{color:var(--muted);font-size:clamp(15px,2.4vw,22px);text-align:center;margin:14px 0 18px;line-height:1.35}
+.stage{position:relative;width:min(92vw,560px);aspect-ratio:1;margin-top:8px}
+.stage svg{width:100%;height:100%;overflow:visible;display:block}
+#wheel{transform-origin:300px 300px;transition:transform 6s cubic-bezier(.12,.72,.08,1)}
+.lbl1{font-weight:800;font-size:19px;fill:var(--label);text-anchor:middle}
+.lbl2{font-weight:500;font-size:17px;fill:var(--label);text-anchor:middle}
+.ico{font-size:34px;text-anchor:middle}
+/* bulbs */
+.bulb{fill:var(--bulb);filter:drop-shadow(0 0 3px rgba(var(--glow),.55));animation:idle 2.4s ease-in-out infinite}
+@keyframes idle{0%,100%{opacity:.8}50%{opacity:1;filter:drop-shadow(0 0 7px rgba(var(--glow),.9))}}
+.spinning .bulb{animation:chase .5s linear infinite}
+@keyframes chase{
+  0%,45%{fill:#fff6d6;filter:drop-shadow(0 0 4px rgba(var(--glow),.9)) drop-shadow(0 0 12px rgba(var(--glow),.9));opacity:1}
+  50%,100%{fill:#a9c4f5;filter:none;opacity:.5}
+}
+.win .bulb{animation:flash .35s steps(1) 8}
+@keyframes flash{
+  0%{fill:#fff6d6;filter:drop-shadow(0 0 14px rgba(var(--glow),1));opacity:1}
+  50%{fill:#a9c4f5;filter:none;opacity:.45}
+}
+.spinning .halo{opacity:1}
+.halo{opacity:0;transition:opacity .4s}
+/* hub */
+#hub{cursor:pointer}
+#hub text{font-family:'Inter',sans-serif;font-weight:800;fill:#fff;text-anchor:middle}
+#hub:focus-visible circle.core{stroke:#fff;stroke-width:4}
+.disabled #hub{cursor:default}
+.cta{
+  margin-top:26px;border:0;cursor:pointer;color:#fff;font:700 clamp(18px,3vw,24px) 'Inter',sans-serif;
+  padding:18px 0;width:min(86vw,444px);border-radius:999px;
+  background:linear-gradient(180deg,var(--blue2),var(--blue));
+  box-shadow:0 12px 28px rgba(11,92,255,.35);transition:transform .15s,opacity .2s;
+}
+.cta:hover:not(:disabled){transform:translateY(-2px)}
+.cta:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.cta:disabled{opacity:.55;cursor:default}
+.fine{color:var(--muted);font-size:14px;margin:18px 0 0;text-align:center}
+.note{position:fixed;font-family:'Caveat',cursive;font-size:28px;color:var(--blue);line-height:1.1;pointer-events:none}
+.n1{left:4vw;top:18vh;transform:rotate(-12deg)}.n2{right:4vw;top:20vh;transform:rotate(-8deg)}
+.n3{left:4vw;bottom:10vh;transform:rotate(-14deg)}.n4{right:4vw;bottom:12vh;transform:rotate(-12deg)}
+@media(max-width:1100px){.note{display:none}}
+/* result */
+.overlay{position:fixed;inset:0;background:rgba(10,10,30,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:10}
+.overlay.show{display:flex}
+.card{background:var(--card);border-radius:28px;padding:34px 30px;max-width:380px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.35);animation:pop .35s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{transform:scale(.8);opacity:0}}
+.card .big{font-size:56px}
+.card h2{margin:6px 0 4px;font-size:28px;letter-spacing:-.02em}
+.card p{color:var(--muted);margin:0 0 20px;line-height:1.45}
+.card .cta{margin:0;width:100%;font-size:18px;padding:15px 0}
+@media(prefers-reduced-motion:reduce){#wheel{transition-duration:.01s}.bulb,.spinning .bulb,.win .bulb{animation:none}.spinning .bulb{filter:drop-shadow(0 0 10px rgba(var(--glow),1))}}
+</style>
+</head>
+<body>
+<p class="eyebrow">WEBCRAFT SPECIAL</p>
+<h1>Spin & <span>Win</span></h1>
+<p class="sub">Take a spin and unlock a special reward.<br>New surprises every week!</p>
+
+<div class="note n1">Good<br>Ideas<br>Win Here!</div>
+<div class="note n2">Spin<br>for Growth!</div>
+<div class="note n3">Marketing<br>growth<br>starts with<br>a spin!</div>
+<div class="note n4">Same<br>Luck.<br>Bigger<br>Brands.</div>
+
+<div class="stage" id="stage">
+<svg viewBox="0 0 600 600" role="img" aria-label="Prize wheel">
+  <defs>
+    <radialGradient id="hubg"><stop offset="0" stop-color="#2a73ff"/><stop offset="1" stop-color="#0a4fe0"/></radialGradient>
+    <filter id="sh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="8" stdDeviation="14" flood-color="#0b5cff" flood-opacity=".35"/></filter>
+  </defs>
+  <circle cx="300" cy="300" r="292" fill="#0b5cff" filter="url(#sh)"/>
+  <circle cx="300" cy="300" r="292" fill="none" stroke="#3b82ff" stroke-width="3"/>
+  <circle class="halo" cx="300" cy="300" r="275" fill="none" stroke="rgba(255,196,60,.35)" stroke-width="26"/>
+  <g id="wheel"></g>
+  <circle cx="300" cy="300" r="263" fill="none" stroke="rgba(0,0,0,.12)" stroke-width="3"/>
+  <g id="bulbs"></g>
+  <!-- pointer -->
+  <path d="M300 62 C282 62 270 50 270 34 C270 14 285 3 300 3 C315 3 330 14 330 34 C330 50 318 62 300 62Z" fill="#0b5cff" transform="translate(0,8)"/>
+  <path d="M300 78 L276 46 L324 46Z" fill="#0b5cff"/>
+  <circle cx="300" cy="40" r="7" fill="#fff"/>
+  <!-- hub -->
+  <g id="hub" tabindex="0" role="button" aria-label="Spin the wheel">
+    <circle cx="300" cy="300" r="68" fill="#cfe0ff" opacity=".75"/>
+    <circle class="core" cx="300" cy="300" r="56" fill="url(#hubg)"/>
+    <text x="300" y="312" font-size="36">SPIN</text>
+    <path d="M286 330h28m-8-8l8 8-8 8" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
+</div>
+
+<button class="cta" id="go">Spin the Wheel →</button>
+<p class="fine" id="fine">You can spin once. Rewards are non-transferable.</p>
+
+<div class="overlay" id="ov" role="dialog" aria-modal="true" aria-live="polite">
+  <div class="card">
+    <div class="big" id="rIco"></div>
+    <h2 id="rTitle"></h2>
+    <p id="rText">Claim it by booking a quick call with our team.</p>
+    <button class="cta" id="close">Claim my reward</button>
+  </div>
+</div>
+
+<script>
+var prizes=[
+ {ico:'🎁',a:'20% OFF',b:'Brand|Strategy',c:'a'},
+ {ico:'📈',a:'Free',b:'Consultation',c:'b'},
+ {ico:'📸',a:'Social Media',b:'Audit',c:'c'},
+ {ico:'🎉',a:'Surprise',b:'Gift',c:'b'},
+ {ico:'🖥️',a:'Free',b:'Ad Creative|Concept',c:'c'},
+ {ico:'📣',a:'10% OFF',b:'Monthly|Management',c:'a'},
+ {ico:'📊',a:'Website',b:'SEO Audit',c:'b'},
+ {ico:'💎',a:'30% OFF',b:'Paid Ads|Setup',c:'c'}
+];
+var N=prizes.length,S=360/N,NS='http://www.w3.org/2000/svg',CX=300,CY=300,R=262;
+function pt(r,deg){var t=deg*Math.PI/180;return [CX+r*Math.sin(t),CY-r*Math.cos(t)];}
+function el(n,attrs,parent,txt){var e=document.createElementNS(NS,n);for(var k in attrs)e.setAttribute(k,attrs[k]);if(txt!=null)e.textContent=txt;parent.appendChild(e);return e;}
+var wheel=document.getElementById('wheel'),fills={a:'var(--wheel-a)',b:'var(--wheel-b)',c:'var(--wheel-c)'};
+prizes.forEach(function(p,i){
+  var a=i*S,p1=pt(R,a-S/2),p2=pt(R,a+S/2);
+  el('path',{d:'M'+CX+' '+CY+'L'+p1[0]+' '+p1[1]+'A'+R+' '+R+' 0 0 1 '+p2[0]+' '+p2[1]+'Z',fill:fills[p.c]},wheel);
+  var g=el('g',{transform:'rotate('+a+' '+CX+' '+CY+')'},wheel);
+  el('text',{x:CX,y:CY-212,'class':'ico'},g,p.ico);
+  var y=CY-172;
+  el('text',{x:CX,y:y,'class':'lbl1'},g,p.a);
+  p.b.split('|').forEach(function(line,k){el('text',{x:CX,y:y+22+k*20,'class':'lbl2'},g,line);});
+});
+var bulbs=document.getElementById('bulbs'),B=16;
+for(var i=0;i<B;i++){
+  var q=pt(277,i*360/B);
+  var c=el('circle',{cx:q[0],cy:q[1],r:9,'class':'bulb'},bulbs);
+  c.style.animationDelay=(i%2?0:-.25)+(i*-.0)+'s';
+  c.dataset.i=i;
+}
+/* ===== SOUND: put your audio files next to this HTML file and set the names here ===== */
+var SPIN_SRC='spin.mp3';  /* plays (loops) while the wheel spins */
+var WIN_SRC='win.mp3';    /* optional: plays when the wheel stops. Set to '' to skip */
+function mk(src,loop){if(!src)return null;try{var a=new Audio(src);a.loop=loop;a.preload='auto';a.addEventListener('error',function(){a._bad=true;});return a;}catch(e){return null;}}
+var spinSnd=mk(SPIN_SRC,true),winSnd=mk(WIN_SRC,false);
+function playSnd(a){if(!a||a._bad)return;try{a.currentTime=0;a.volume=1;var p=a.play();if(p&&p.catch)p.catch(function(){});}catch(e){}}
+function fadeOut(a){if(!a||a.paused)return;var v=1,t=setInterval(function(){v-=.1;if(v<=0){clearInterval(t);a.pause();a.volume=1;}else a.volume=v;},60);}
+var stage=document.getElementById('stage'),rot=0,used=false,busy=false;
+var bulbEls=bulbs.querySelectorAll('.bulb');
+function setChase(on){
+  bulbEls.forEach(function(b,i){b.style.animationDelay=on?(-(i%B)*(0.5/B))+'s':((i%2)?'-1.2s':'0s');});
+}
+function spin(){
+  if(used||busy)return; busy=true; used=true;
+  document.getElementById('go').disabled=true;
+  document.getElementById('fine').textContent='Good luck! Spinning…';
+  var win=Math.floor(Math.random()*N);
+  var jitter=(Math.random()-.5)*(S*.6);
+  var cur=((rot%360)+360)%360;
+  var delta=((360-win*S-cur)%360+360)%360;
+  rot+=360*6+delta+jitter;
+  setChase(true); stage.classList.add('spinning'); playSnd(spinSnd);
+  wheel.style.transform='rotate('+rot+'deg)';
+  var done=false;
+  function end(){
+    if(done)return; done=true;
+    stage.classList.remove('spinning'); setChase(false); fadeOut(spinSnd);
+    stage.classList.add('win'); playSnd(winSnd);
+    setTimeout(function(){
+      stage.classList.remove('win');
+      var p=prizes[win];
+      document.getElementById('rIco').textContent=p.ico;
+      document.getElementById('rTitle').textContent=p.a+' '+p.b.replace('|',' ');
+      document.getElementById('ov').classList.add('show');
+      document.getElementById('close').focus();
+      document.getElementById('fine').textContent='You\u2019ve used your spin. Rewards are non-transferable.';
+      busy=false;
+    },2900);
+  }
+  wheel.addEventListener('transitionend',end,{once:true});
+  setTimeout(end,6300);
+}
+document.getElementById('go').addEventListener('click',spin);
+var hub=document.getElementById('hub');
+hub.addEventListener('click',spin);
+hub.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();spin();}});
+document.getElementById('close').addEventListener('click',function(){document.getElementById('ov').classList.remove('show');});
+setChase(false);
+</script>
+</body>
+</html>

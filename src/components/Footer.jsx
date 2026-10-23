@@ -87,6 +87,9 @@ export default function Footer({ onOpenContact }) {
               <a href="#faq" className="text-white hover:underline transition-all">
                 FAQ
               </a>
+              <a href="#spin" className="text-white hover:underline transition-all font-semibold text-yellow-300 flex items-center gap-1">
+                <span>🎡</span> Spin &amp; Win
+              </a>
             </div>
 
             {/* Socials & Location */}

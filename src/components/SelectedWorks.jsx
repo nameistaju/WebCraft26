@@ -38,7 +38,7 @@ export default function SelectedWorks() {
             onMouseLeave={() => setHoveredCard(null)}
           >
             {/* Horizontal 16:10 Browser Card Container */}
-            <div className="relative aspect-[16/10] w-full rounded-2xl md:rounded-3xl overflow-hidden bg-[#ecdcd2] shadow-sm border border-black/10 transition-all duration-500 group-hover:shadow-2xl group-hover:-translate-y-1">
+            <div className="relative aspect-[16/10] w-full rounded-xl md:rounded-2xl overflow-hidden bg-[#ecdcd2] shadow-sm border border-black/10 transition-all duration-500 group-hover:shadow-2xl group-hover:-translate-y-1">
               {/* Browser Window Header Bar */}
               <div className="absolute top-0 left-0 right-0 h-7 bg-white/75 backdrop-blur-md z-30 flex items-center px-3.5 gap-1.5 border-b border-black/5 transition-colors group-hover:bg-white/90">
                 <span className="w-2 h-2 rounded-full bg-[#FF5F56]/80" />
@@ -155,12 +155,17 @@ export default function SelectedWorks() {
             {featuredPackaging.map((project) => (
               <div
                 key={project.id}
+                onClick={() => {
+                  if (project.link && project.link.startsWith('#')) {
+                    window.location.hash = project.link.replace('#', '');
+                  }
+                }}
                 className="group flex flex-col cursor-pointer no-underline text-inherit"
                 onMouseEnter={() => setHoveredCard(project.id)}
                 onMouseLeave={() => setHoveredCard(null)}
               >
                 {/* Packaging Card Container (Portrait 4:5 Box) */}
-                <div className="relative aspect-[4/5] w-full rounded-2xl md:rounded-3xl overflow-hidden bg-[#ecdcd2] shadow-sm border border-black/5 transition-all duration-500 group-hover:shadow-2xl group-hover:-translate-y-1">
+                <div className="relative aspect-[4/5] w-full rounded-xl md:rounded-2xl overflow-hidden bg-[#ecdcd2] shadow-sm border border-black/5 transition-all duration-500 group-hover:shadow-2xl group-hover:-translate-y-1">
                   {/* Primary Packaging Photo */}
                   <img
                     src={project.image}
