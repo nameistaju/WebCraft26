@@ -130,14 +130,6 @@ export default function Footer({ onOpenContact }) {
                   </svg>
                 </a>
               </div>
-
-              <div className="mt-8 text-xs text-white/60 leading-relaxed font-sans">
-                Handmade by humans.
-                <br />
-                Well, digitally.
-                <br />
-                Bucharest, Romania
-              </div>
             </div>
           </div>
         </div>

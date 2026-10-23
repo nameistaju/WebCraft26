@@ -19,8 +19,8 @@ export default function FAQ() {
       a: "Of course. Not everything needs to be burned to the ground and rebuilt. Sometimes a brand just needs a fresh pair of eyes and a few very intentional changes.",
     },
     {
-      q: "Do you work with clients outside Romania?",
-      a: "Absolutely. We’re based in Bucharest, but our Wi-Fi travels remarkably well. We’re happy to work with people pretty much anywhere.",
+      q: "Do you work with clients globally?",
+      a: "Absolutely. Our Wi-Fi travels remarkably well. We’re happy to work with people pretty much anywhere.",
     },
     {
       q: "What if we don’t like the first concepts?",
